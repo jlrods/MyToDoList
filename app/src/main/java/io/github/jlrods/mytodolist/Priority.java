@@ -44,8 +44,8 @@ public enum Priority {
     }
 
     //Find a system by receiving the ordinal
-    public static Priority findSystem(int ordinal){
-        Log.d("Ent_findSystem","Ent findSystem method in the Unit_System enum.");
+    public static Priority findPriorityById(int ordinal){
+        Log.d("Ent_findPriorityById","Ent findPriorityById method in the Unit_System enum.");
         //Declare and instantiate Unit_System object to be returned by method
         Priority priority = null;
         //Check the ordinal against the possible ordinals corresponding to each enum item
@@ -66,7 +66,7 @@ public enum Priority {
                 priority = Priority.NONE;
                 break;
         }//End of switch statement
-        Log.d("Ent_findSystem","Ent findSystem method in the Unit_System enum.");
+        Log.d("Ent_findPriorityById","Ent findPriorityById method in the Unit_System enum.");
         return priority;
     }// End of findProperty
 }//End of Priority class
