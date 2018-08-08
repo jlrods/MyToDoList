@@ -41,7 +41,7 @@ public class Task {
     }//End of default constructor
 
     //Grocery constructor
-    public Task(int id,String groceryName, Category category){
+    public Task(int id,String groceryName, Category category,boolean isSelected){
         //Call default constructor
         this();
         Log.d("Ent3ArgTask","Enter 3 argument constructor in the Task class.");
@@ -49,6 +49,7 @@ public class Task {
         this.id =id;
         this.description = groceryName;
         this.category = category;
+        this.isSelected = isSelected;
         Log.d("Ent3ArgTask","Enter 3 argument constructor in the Task class.");
     }// End of Grocery constructor
 
@@ -73,11 +74,12 @@ public class Task {
 
     //Full constructor
     public Task(int id,String descripttion,Category category,Priority priority,boolean isDone,
-                boolean isAppointment, long dueDate,boolean isArchived,String notes,boolean isSelected){
+                boolean isAppointment, long dueDate,boolean isArchived,String notes,boolean isSelected,long dateClosed){
         //Call the 9 argument constructor and pass in the parameters
         this(id,descripttion,category,priority,isDone,isAppointment,dueDate,isArchived,notes);
         Log.d("EntFullTask","Enter full constructor in the Task class.");
         this.isSelected = isSelected;
+        this.dateClosed = dateClosed;
         Log.d("ExtFullTask","Exit full constructor in the Task class.");
     }//End of full constructor
 

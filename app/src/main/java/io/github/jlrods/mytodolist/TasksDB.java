@@ -1,9 +1,12 @@
 package io.github.jlrods.mytodolist;
 
 import android.content.Context;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
+
+import java.util.ArrayList;
 
 /**
  * Created by rodjose1 on 30/07/2018.
@@ -13,8 +16,8 @@ import android.util.Log;
 public class TasksDB extends SQLiteOpenHelper {
     private Context context;
     //Default constructor
-    public TasksDB(Context context, String name, SQLiteDatabase.CursorFactory factory, int version){
-        super(context, name, factory, version);
+    public TasksDB(Context context){
+        super(context, "Task Database",null, 1);
         this.context = context;
     }//End of default constructor
 
@@ -39,7 +42,7 @@ public class TasksDB extends SQLiteOpenHelper {
         db.execSQL("INSERT INTO PRIORITY VALUES (null, '"+Priority.LOW.toString()+"');");
         db.execSQL("INSERT INTO PRIORITY VALUES (null, '"+Priority.MEDIUM.toString()+"');");
         db.execSQL("INSERT INTO PRIORITY VALUES (null, '"+Priority.HIGH.toString()+"');");
-        db.execSQL("INSERT INTO PRIORITY VVALUES (null, '"+Priority.URGENT.toString()+"');");
+        db.execSQL("INSERT INTO PRIORITY VALUES (null, '"+Priority.URGENT.toString()+"');");
 
         //Create the GROCERY_TYPE TABLE
         db.execSQL("CREATE TABLE GROCERY_TYPE(_id INTEGER PRIMARY KEY AUTOINCREMENT,Name TEXT);");
@@ -260,10 +263,7 @@ public class TasksDB extends SQLiteOpenHelper {
         db.execSQL("CREATE TABLE TASK (_id INTEGER PRIMARY KEY AUTOINCREMENT, \n" +
                 "Description TEXT, Category INTEGER, Priority INTEGER, IsDone INTEGER, \n" +
                 "IsAppointment INTEGER, DueDate BIGINT, IsArchived INTEGER, IsSelected INTEGER, Notes TEXT, \n" +
-                "DateCreater BIGINT, DateClosed BIGINT);");
-
-
-
+                "DateCreated BIGINT, DateClosed BIGINT);");
 
         Log.d("Ext_DBOncreate","Exit onCreate method in TasksDB class.");
     }//End of OnCreate method
@@ -272,4 +272,402 @@ public class TasksDB extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 
     }// End of onUpgrade method
+
+    //Method to add a new task within the database
+        public int addItem(Object item) {
+        Log.d("Ent_addItem","Enter addItem method in TasksDB class.");
+
+        //Declare and instantiate a new database object to handle the database operations
+        SQLiteDatabase db = getWritableDatabase();
+            //Declare and initialize a query string variables
+            String insertInto = "INSERT INTO ";
+            String values = " VALUES(null, ";
+            String closeBracket =")";
+            String table ="";
+            String fields ="";
+            String sql = "SELECT MAX(_id) FROM ";
+            //Declare and initialize int variable to hold the task id to be returned. Default value is -1
+            int id =-1;
+        //Declare and initialize variables to be used in the SQL statement (Values a got from task object parameter)
+        String description = ((Task)item).getDescription();
+        int category;
+        int priority;
+        int isDone;
+        int isAppointment;
+        long dueDate;
+        int isArchived;
+        int isSelected;
+        String notes;
+        long dateCreated;
+        long dateClosed ;
+        //If else statements to check the class each object is from
+        if(item instanceof GroceryType){
+           //if item is a GroceryType object, update the Task table where the id corresponds
+           table= "GROCERY_TYPE";
+           fields="Name = '"+((GroceryType) item).getName()+"'";
+            sql+= table;
+            Log.d("addGroceryType","GroceryType to be added in the addItem method in TasksDB class.");
+        }else if(item instanceof Category){
+            //if item is a Category object, update the Task table where the id corresponds
+            table = "CATEGORY";
+            fields="Name ='"+ ((Category) item).getName()+"'";
+            sql+= table;
+            Log.d("addCategory","Catgory to be added in the addItem method in TasksDB class.");
+        }else if(item instanceof Grocery){
+            //if item is a Grocery object, update the Task table where the id corresponds
+            table = "GROCERIES";
+            fields="Name = '"+((Grocery) item).getDescription()+
+                        "', TypeOfGrocery = "+((Grocery)item).getType().getId()+
+                        "', IsSelected = "+toInt(((Grocery)item).isSelected());
+            sql ="SELECT _id FROM GROCERIES WHERE DateCreated = "+ ((Grocery) item).getDateCreated();
+            Log.d("addGrocery","Grocery to be added in the addItem method in TasksDB class.");
+        }else if(item instanceof Task){
+            table ="TASK (Description,Category,Priority,IsDone,IsAppointment,DueDate,IsArchived," +
+                    "IsSelected,Notes,DateCreated,DateClosed) ";
+            description = ((Task)item).getDescription();
+            category = ((Task)item).getCategory().getId();
+            priority = ((Task)item).getPriority().increaseOrdinal();
+            isDone = toInt(((Task)item).isDone());
+            isAppointment = toInt(((Task)item).isAppointment());
+            dueDate = ((Task)item).getDueDate();
+            isArchived = toInt(((Task)item).isArchived());
+            isSelected = toInt(((Task)item).isSelected());
+            notes = ((Task)item).getNotes();
+            dateCreated = ((Task)item).getDateCreated();
+            dateClosed = ((Task)item).getDateClosed();
+            fields = "'"+description+"', "+ category+", "+priority+", "+isDone+", "+isAppointment+", "+
+                    dueDate+", "+isArchived+", "+isSelected+", '"+notes+"', "+dateCreated+", "+dateClosed;
+            sql ="SELECT _id FROM TASK WHERE DateCreated = "+ ((Task) item).getDateCreated();
+            Log.d("addTask","Task to be added in the addItem method in TasksDB class.");
+        }//End of if else statements
+        //Execure the sql command to update corresponding table
+        db.execSQL(insertInto+table+values+fields+closeBracket);
+        //Declare and isntantiate a cursor object to hold the id of task just added into the TASK table
+        Cursor c =db.rawQuery(sql,null);
+        //Check the cursor is not empty and move to next row
+        if (c.moveToNext()){
+            //Make the id equal to the _id field in the database
+            id = c.getInt(0);
+        }//End of if conditio
+        //Close both  database and cursor
+        c.close();
+        db.close();
+        Log.d("Ext_addTask","Exit addTask method in TasksDB class.");
+        //Return id of item just added into database
+        return id;
+    }//End of addTask method
+
+    //Method to delete a task within the database
+    public void deleteItem(int id, Object item) {
+        Log.d("Ent_deleteItem","Enter deleteItem method in TasksDB class.");
+        //Declare and instantiate a new database object to handle the database operations
+        SQLiteDatabase db = getWritableDatabase();
+        //Declare and initialize a query string
+        String sql1 = "DELETE FROM ";
+        String sql2 ="WHERE _id = ";
+        String table="";
+        if(item instanceof GroceryType){
+            table = "GROCERY_TYPE";
+            //Delete all items from GROCERIES table where type id is equal to id
+            db.execSQL(sql1+"GOCERIES WHERE TypeOfGroceries = "+ id);
+            Log.d("deleteGROCERY_TYPE","GROCERY_TYPE to be deleted.");
+        }else if(item instanceof Category){
+            table ="CATEGORY";
+            //Delete all items from TASK table where Category ID = id
+            db.execSQL(sql1+"TASK WHERE Category = "+ id);
+            Log.d("deleteCATEGORY","CATEGORY to be deleted.");
+        }else if(item instanceof Grocery){
+            table = "GROCERIES";
+            Log.d("deleteGROCERY","GROCERY to be deleted.");
+        }else if(item instanceof Task){
+            table = "TASK";
+            Log.d("deleteTASK","TASK to be deleted.");
+        }//End of if else statements
+
+        //Run SQL statement to delete the task with id x from the TASK table
+        db.execSQL(sql1+ table +sql2+ id);
+        db.close();
+        Log.d("Ext_deleteItem","Exit deleteItem method in TasksDB class.");
+    }//End of deleteTask method
+
+    //Method to update an existing Task
+    public void updateTable(int id,  Object item) {
+        Log.d("Ent_UpdateTable","Enter updateTable method in TasksDB class.");
+        //Declare and instantiate a new database object to handle the database operations
+        SQLiteDatabase bd = getWritableDatabase();
+        //Declare and initialize a query string variables
+        String update = "UPDATE ";
+        String set = " SET ";
+        String where =" WHERE _id = ";
+        String table ="";
+        String fields ="";
+        //If else statements to check the class each object is from
+        if(item instanceof GroceryType){
+            //if item is a GroceryType object, update the Task table where the id corresponds
+            table= "GROCERY_TYPE";
+            fields="Name = '"+((GroceryType) item).getName()+'"';
+        }else if(item instanceof Category){
+            //if item is a Category object, update the Task table where the id corresponds
+            table = "CATEGORY";
+            fields="Name ='"+ ((Category) item).getName()+"'";
+        }else if(item instanceof Grocery){
+            //if item is a Grocery object, update the Task table where the id corresponds
+            table = "GROCERIES";
+            fields="Name = '"+((Grocery) item).getDescription()+
+                    "', TypeOfGrocery = "+((Grocery)item).getType().getId()+
+                    "', IsSelected = "+toInt(((Grocery)item).isSelected());
+        }else if(item instanceof Task){
+            //if item is a Task object, update the Task table where the id corresponds
+            table ="TASK";
+            fields = "Description = '"+((Task) item).getDescription()+
+                    "', Category = '"+ ((Task) item).getCategory().getId()+
+                    "', Priority = '"+ ((Task) item).getPriority().increaseOrdinal()+
+                    "', IsDone = '"+ toInt(((Task) item).isDone())+
+                    "', IsAppointment = '"+toInt(((Task) item).isAppointment())+
+                    "', DueDate = '"+((Task) item).getDueDate()+
+                    "', IsArchived = '"+toInt(((Task) item).isArchived())+
+                    "', Notes = '"+ ((Task) item).getNotes()+
+                    "', DateCreated = '"+((Task) item).getDateCreated()+
+                    "', DateClosed = '"+((Task) item).getDateClosed();
+            Log.d("UpdateTask","Task item to be updated in database.");
+        }//End of if else statements
+        //Execure the sql command to update corresponding table
+        bd.execSQL(update+table+set+fields+where+id);
+        //Close the database connection
+        bd.close();
+        Log.d("Ext_UpdateTable","Exit updateTable method in TasksDB class.");
+    }//End of UpdateTable method
+
+    //Method to internally convert a boolean into a int number 1 or  0
+    private int toInt(boolean bool){
+        Log.d("Ent_toInt","Enter toInt method in TasksDB class.");
+        if(bool){
+            Log.d("Ext_toInt","Exit toInt method in TasksDB class (Returned value 1 ).");
+            return 1;
+        }else{
+            Log.d("Ext_toInt","Exit toInt method in TasksDB class (Returned value 0).");
+            return 0;
+        }//End of if else statement
+    }//End of toInt
+
+    //Method to internally convert an int into a boolean true or false. Any value different from 0 will be true
+    private boolean toBoolean (int valueToConvert){
+        Log.d("Ent_toBool","Enter toBoolean method in the TaskDB class.");
+        boolean bool;
+        if(valueToConvert==0){
+            bool = false;
+        }else{
+            bool = true;
+        }//End of if else statement
+        Log.d("Ext_toBool","Exit toBoolean method in the TaskDB class.");
+        return bool;
+    }//End of toBoolean method
+
+    //Method to extract a Category from a cursor object
+    public Category extractCategory(Cursor c){
+        Log.d("Ent_ExtractCategory","Enter extractCategory method in the TaskDB class.");
+        //Declare and initialize a null category object, the one to be returned by the method
+        Category category =null;
+        //Declare an int variable to hold the Category id retrieved from the cursor
+        int id;
+        //Declare a string object to hold the name attribute retrieved from the cursor
+        String name="";
+        //Retrieve the id value from the cursor object
+        id = c.getInt(0);
+        //Retrieve the name value from the cursor object
+        name = c.getString(1);
+        //Create a new Category object by using the full constructor
+        category = new Category(id,name);
+        Log.d("Ext_ExtractCategory","Exit extractCategory method in the TaskDB class.");
+        //Return the category object
+        return category;
+    }//End of extractCategory method
+
+    //Method to extract a GroceryType from a cursor object
+    public GroceryType extractGroceryType(Cursor c){
+        Log.d("Ent_ExtractGroceryType","Enter extractGroceryType method in the TaskDB class.");
+        //Declare and initialize a null GroceryType object, the one to be returned by the method
+        GroceryType type=null;
+        //Declare an int variable to hold the Category id retrieved from the cursor
+        int id;
+        //Declare a string object to hold the name attribute retrieved from the cursor
+        String name="";
+        //Retrieve the id value from the cursor object
+        id = c.getInt(0);
+        name = c.getString(1);
+        type = new GroceryType(id,name);
+        Log.d("Ext_ExtractGroceryType","Exit extractGroceryType method in the TaskDB class.");
+        return type;
+    }//End of extractGroceryType method
+
+    //Method to extrac an unit form a cursor object
+    public Task extractTask(Cursor c){
+        Log.d("Ent_ExtractTask","Enter extractTask method in the TaskDB class.");
+        //Declare null Task object to be returned by method
+        Task task = null;
+        //Declare variables to hold data coming from cursor and to be used to call Task constructor
+        int id;
+        String description ="";
+        Category category;
+        Priority priority;
+        boolean isDone;
+        boolean isAppointment;
+        long dueDate;
+        boolean isArchived;
+        String notes;
+        long dateCreated;
+        long dateClosed;
+        boolean isSelected;
+        //Populate variables with values coming from the Cursor object
+        id = c.getInt(0);
+        description = c.getString(1);
+        category = MainActivity.findCategoryById(c.getInt(2));
+        priority = Priority.findPriorityById(c.getInt(3));
+        isDone = toBoolean(c.getInt(4));
+        isAppointment = toBoolean(c.getInt(5));
+        dueDate = c.getInt(6);
+        isArchived = toBoolean(c.getInt(7));
+        isSelected = toBoolean(c.getInt(8));
+        notes = c.getString(9);
+        dateCreated = c.getInt(10);
+        dateClosed = c.getInt(11);
+        //Create the Task object
+        task = new Task(id,description,category,priority,isDone,isAppointment,dueDate,isArchived,
+                notes,isSelected,dateClosed);
+        Log.d("Ext_ExtractTask","Exit extractTask method in the TaskDB class.");
+        return task;
+    }//End of extractTask method
+
+    public Grocery extractGrocery(Cursor c){
+        Log.d("Ent_ExtractGrocery","Enter extractGrocery method in the TaskDB class.");
+        //Declare null Grocery object to be returned by method
+        Grocery grocery = null;
+        //Declare variable to hold data coming from cursor and to be used to call Grocery constructor
+        int id;
+        String groceryName ="";
+        GroceryType type;
+        boolean isSelected;
+        //Populate variables with values coming from the Cursor object
+        id = c.getInt(0);
+        groceryName = c.getString(1);
+        type = MainActivity.findGroceryTypeById(c.getInt(2));
+        isSelected = toBoolean(c.getInt(3));
+        Category category = MainActivity.findCategoryByName("Groceries");
+        //Create the Grocery object
+        grocery = new Grocery(id,groceryName,category,type,isSelected);
+        Log.d("Ext_ExtractGrocery","Exit extractGrocery method in the TaskDB class.");
+        return grocery;
+    }//End of extractGrocery method
+
+    //Method to retrieve the list of categories stored on the database
+    public ArrayList<Category> getCategoryList(){
+        Log.d("Ent_getCategoryList","Enter getCategoryList method in the TaskDB class.");
+        //Declare and instantiate Array list of Category objects
+        ArrayList<Category> list = new ArrayList<Category>();
+        //Define a string to hold the sql query
+        String query = "SELECT * FROM CATEGORY ";
+        //Declare a category object to hold temporarily the Category objects to be created
+        Category item;
+        //Declare and instantiate a cursor object to hold data retrieved from sql query
+        Cursor c = runQuery(query);
+        //Check the cursor is not null or empty
+        if(c !=null && c.getCount()>0){
+            //Loop through the cursor and extract each row as a Category object
+            while(c.moveToNext()){
+                //Call method to extract the category
+                item = extractCategory(c);
+                //Add category to the Array list
+                list.add(item);
+            }//End of while loop
+        }//End of if statement to check cursor is not null or empty
+        Log.d("Ext_getCategoryList","Exit getCategoryList method in the TaskDB class.");
+        return list;
+    }//End of getGroceryList method
+
+    //Method to retrieve the list of grocery types stored on the database
+    public ArrayList<GroceryType> getGroceryTypeList(){
+        Log.d("Ent_getGroceryTypeList","Enter getGroceryTypeList method in the TaskDB class.");
+        //Declare and instantiate Array list of GroceryType objects
+        ArrayList<GroceryType> list = new ArrayList<GroceryType>();
+        //Define a string to hold the sql query
+        String query = "SELECT * FROM GROCERY_TYPE ";
+        //Declare a GroceryType object to hold temporarily the Category objects to be created
+        GroceryType item;
+        //Declare and instantiate a cursor object to hold data retrieved from sql query
+        Cursor c = runQuery(query);
+        //Check the cursor is not null or empty
+        if(c !=null && c.getCount()>0){
+            //Loop through the cursor and extract each row as a GroceryType object
+            while(c.moveToNext()){
+                //Call method to extract the grocery
+                item = extractGroceryType(c);
+                //Add grocery to the Array list
+                list.add(item);
+            }//End of while loop
+        }//End of if statement to check cursor is not null or empty
+        Log.d("Ext_getGroceryTypeList","Exit getGroceryTypeList method in the TaskDB class.");
+        return list;
+    }//End of getGroceryList method
+
+    //Method to retrieve a list of groceries stored on the database
+    public ArrayList<Grocery> getGroceryList(String query){
+        Log.d("Ent_getGroceryList","Enter getGroceryList method in the TaskDB class.");
+        //Declare and instantiate Array list of Grocery objects
+        ArrayList<Grocery> list = new ArrayList<Grocery>();
+        //Define a string to hold the sql query
+        //String query = "SELECT * FROM GROCERIES ORDER BY TypeOfGrocery";
+        //Declare a Grocery object to hold temporarily the Category objects to be created
+        Grocery item;
+        //Declare and instantiate a cursor object to hold data retrieved from sql query
+        Cursor c = runQuery(query);
+        //Check the cursor is not null or empty
+        //Loop through the cursor and extract each row as a Grocery object
+        if(c !=null && c.getCount()>0){
+            while(c.moveToNext()){
+                //Call method to extract the grocery
+                item = extractGrocery(c);
+                //Add grocery to the Array list
+                list.add(item);
+            }//End of while loop
+        }//End of if statement to check cursor is not null or empty
+        Log.d("Ext_getGroceryList","Exit getGroceryList method in the TaskDB class.");
+        return list;
+    }//End of getGroceryList method
+
+    //Method to retrieve a list of groceries stored on the database
+    public ArrayList<Task> getTaskList(String query){
+        Log.d("Ent_getTaskList","Enter getTaskList method in the TaskDB class.");
+        //Declare and instantiate Array list of Grocery objects
+        ArrayList<Task> list = new ArrayList<Task>();
+        //Define a string to hold the sql query
+        //String query = "SELECT * FROM TASK";
+        //Declare a Grocery object to hold temporarily the Category objects to be created
+        Task item;
+        //Declare and instantiate a cursor object to hold data retrieved from sql query
+        Cursor c = runQuery(query);
+        //Check the cursor is not null or empty
+        if(c !=null && c.getCount()>0){
+            //Loop through the cursor and extract each row as a Task object
+            while(c.moveToNext()){
+                //Call method to extract the grocery
+                item = extractTask(c);
+                //Add Task to the Array list
+                list.add(item);
+            }//End of while loop
+        }//End of if statement to check cursor is not null or empty
+        Log.d("Ext_getTaskList","Exit getTaskList method in the TaskDB class.");
+        return list;
+    }//End of getGroceryList method
+
+    //Method to create a database object, a cursorl, run the sql query and return the result cursor
+    private Cursor runQuery(String query){
+        Log.d("Ent_runQuery","Enter runQuery method.");
+        Cursor cursor = null;
+        SQLiteDatabase db = getReadableDatabase();
+        cursor = db.rawQuery(query,null);
+        //cursor.moveToFirst();
+        Log.d("Ext_runQuery","Exit runQuery method.");
+        return cursor;
+    }//End of runQuery method
+
 }//End of TaskDB class

@@ -15,8 +15,13 @@ public class Grocery extends Task{
     }
 
     //Grocery constructor
-    public Grocery(int id,String groceryName, Category category, GroceryType type){
-        super(id,groceryName,category);
+    public Grocery(int id,String groceryName, Category category, GroceryType type,boolean isSelected){
+        super(id,groceryName,category,isSelected);
         this.type = type;
+    }
+
+    //Getter and Setter method
+    public GroceryType getType(){
+        return this.type;
     }
 }//End of Grocery class
