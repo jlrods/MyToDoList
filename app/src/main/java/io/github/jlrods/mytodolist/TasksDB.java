@@ -265,6 +265,11 @@ public class TasksDB extends SQLiteOpenHelper {
                 "IsAppointment INTEGER, DueDate BIGINT, IsArchived INTEGER, IsSelected INTEGER, Notes TEXT, \n" +
                 "DateCreated BIGINT, DateClosed BIGINT);");
 
+        db.execSQL("INSERT INTO TASK VALUES(null, 'Task1: This is a test 1',1,1,0,0,-1,0,0,'This is the first task to be done...',1533829500,-1);");
+        db.execSQL("INSERT INTO TASK VALUES(null, 'Task2: This is a test 2',2,2,0,0,-1,0,0,'This is the first task to be done...',1534829500,-1);");
+        db.execSQL("INSERT INTO TASK VALUES(null, 'Task3: This is a test 3',2,3,0,0,-1,0,1,'This is the first task to be done...',1535829500,-1);");
+        db.execSQL("INSERT INTO TASK VALUES(null, 'Task4: This is a test 4',4,4,0,0,1533829500,0,1,'This is the first task to be done...',1536829500,-1);");
+
         Log.d("Ext_DBOncreate","Exit onCreate method in TasksDB class.");
     }//End of OnCreate method
 
@@ -521,7 +526,7 @@ public class TasksDB extends SQLiteOpenHelper {
         //Populate variables with values coming from the Cursor object
         id = c.getInt(0);
         description = c.getString(1);
-        category = MainActivity.findCategoryById(c.getInt(2));
+        category = this.findCategoryById(c.getInt(2));
         priority = Priority.findPriorityById(c.getInt(3));
         isDone = toBoolean(c.getInt(4));
         isAppointment = toBoolean(c.getInt(5));
@@ -538,6 +543,20 @@ public class TasksDB extends SQLiteOpenHelper {
         return task;
     }//End of extractTask method
 
+    public Task extractTask(Cursor c,int id){
+        //Declare null Task object to be returned by method
+        Task task = null;
+        boolean found = false;
+        //int i =1;
+        while(c.moveToNext()){
+            if(c.getInt(0)== id){
+                task = extractTask(c);
+                found = true;
+            }
+        }
+        return task;
+    }//End of extractTask method
+
     public Grocery extractGrocery(Cursor c){
         Log.d("Ent_ExtractGrocery","Enter extractGrocery method in the TaskDB class.");
         //Declare null Grocery object to be returned by method
@@ -550,14 +569,31 @@ public class TasksDB extends SQLiteOpenHelper {
         //Populate variables with values coming from the Cursor object
         id = c.getInt(0);
         groceryName = c.getString(1);
-        type = MainActivity.findGroceryTypeById(c.getInt(2));
+        type = this.findGroceryTypeById(c.getInt(2));
         isSelected = toBoolean(c.getInt(3));
-        Category category = MainActivity.findCategoryByName("Groceries");
+        Category category = this.findCategoryByName("Groceries");
         //Create the Grocery object
         grocery = new Grocery(id,groceryName,category,type,isSelected);
         Log.d("Ext_ExtractGrocery","Exit extractGrocery method in the TaskDB class.");
         return grocery;
     }//End of extractGrocery method
+
+    public Task extractGrocery(Cursor c,int id){
+        //Declare null Task object to be returned by method
+        Grocery grocery = null;
+        boolean found = false;
+        int i =0;
+        do{
+            if(c.getColumnIndexOrThrow("_id")== id){
+                grocery = extractGrocery(c);
+                found = true;
+            }else{
+                i++;
+            }
+        }while(!found && i<c.getCount());
+        return grocery;
+    }//End of extractTask method
+
 
     //Method to retrieve the list of categories stored on the database
     public ArrayList<Category> getCategoryList(){
@@ -583,6 +619,23 @@ public class TasksDB extends SQLiteOpenHelper {
         Log.d("Ext_getCategoryList","Exit getCategoryList method in the TaskDB class.");
         return list;
     }//End of getGroceryList method
+
+    //Method to retrieve the list of categories stored on the database
+    public Cursor getCategoryList(String query){
+        Log.d("Ent_getCategoryList","Enter getCategoryList method in the TaskDB class.");
+        //Declare and instantiate Array list of Category objects
+        Cursor list = null;
+        //Define a string to hold the sql query
+        //String query = "SELECT * FROM CATEGORY ";
+        //Declare a category object to hold temporarily the Category objects to be created
+        //Category item;
+        //Declare and instantiate a cursor object to hold data retrieved from sql query
+        Cursor c = runQuery(query);
+        //Check the cursor is not null or empty
+        Log.d("Ext_getCategoryList","Exit getCategoryList method in the TaskDB class.");
+        return list;
+    }//End of getGroceryList method
+
 
     //Method to retrieve the list of grocery types stored on the database
     public ArrayList<GroceryType> getGroceryTypeList(){
@@ -660,7 +713,7 @@ public class TasksDB extends SQLiteOpenHelper {
     }//End of getGroceryList method
 
     //Method to create a database object, a cursorl, run the sql query and return the result cursor
-    private Cursor runQuery(String query){
+    public Cursor runQuery(String query){
         Log.d("Ent_runQuery","Enter runQuery method.");
         Cursor cursor = null;
         SQLiteDatabase db = getReadableDatabase();
@@ -669,5 +722,75 @@ public class TasksDB extends SQLiteOpenHelper {
         Log.d("Ext_runQuery","Exit runQuery method.");
         return cursor;
     }//End of runQuery method
+
+    //Method to find a category by passing in id number
+    public Category findCategoryByName(String name){
+        Log.d("Ent_FindCatByName","Enter the findCategoryByName method in the TasksDB class.");
+        //Declare and instantiate a new cursor object to hold the list of categories by running a sql query
+        Cursor categories = runQuery("SELECT * FROM CATEGORY");
+        //Declare and instantiate a null Category object
+        Category category = null;
+        //Declare and set to false a boolean flag to prompt when the category it's being looked for is found
+        Boolean found = false;
+        //While loop to iterate through the cursor (list of categories)
+        while(categories.moveToNext() && !found){
+            //Check the name of each category by accessing the corresponding column in the cursor
+            if(categories.getString(1).toLowerCase().equals(name.toLowerCase())){
+                //if the names are the same, populate the category object by extracting the category object from the cursor
+                category = extractCategory(categories);
+                //Set boolean flag to true
+                found = true;
+            }//End of if statement to check the current item name
+        }//End of while loop to iterate
+        Log.d("Ent_FindCatByName","Enter the findCategoryByName method in the TasksDB class.");
+        return category;
+    }//End of findCategoryById method
+
+    //Method to find a category by passing in id number
+    public Category findCategoryById(int id){
+        Log.d("Ent_FindCatById","Enter the findCategoryById method in the MainActivity class.");
+        //Declare and instantiate a new cursor object to hold the list of categories by running a sql query
+        Cursor categories = runQuery("SELECT * FROM CATEGORY");
+        //Declare and instantiate a null Category object
+        Category category = null;
+        //Declare and set to false a boolean flag to prompt when the category it's being looked for is found
+        Boolean found = false;
+        //While loop to iterate through the cursor (list of categories)
+        while(categories.moveToNext() && !found){
+            //Check the id of each category by accessing the corresponding column in the cursor
+            if(categories.getInt(0)== id){
+                //if the names are the same, populate the category object by extracting the category object from the cursor
+                category = extractCategory(categories);
+                //Set boolean flag to true
+                found = true;
+            }//End of if statement to check the current item name
+        }//End of while loop to iterate
+        Log.d("Ent_FindCatById","Enter the findCategoryById method in the MainActivity class.");
+        return category;
+    }//End of findCategoryById method
+
+    //Method to find a category by passing in id number
+    public GroceryType findGroceryTypeById(int id){
+        Log.d("Ent_FindCatById","Enter the findCategoryById method in the MainActivity class.");
+        //Declare and instantiate a new cursor object to hold the list of grocery types by running a sql query
+        Cursor groceryTypes = runQuery("SELECT * FROM GROCERY_TYPE");
+        //Declare and instantiate a null groceryType object
+        GroceryType type = null;
+        //Declare and set to false a boolean flag to prompt when the grocery type it's being looked for is found
+        Boolean found = false;
+        //While loop to iterate through the cursor (list of grocery types)
+        while(groceryTypes.moveToNext() && !found){
+            //if the names are the same, populate the category object by extracting the category object from the cursor
+            if(groceryTypes.getInt(0)== id){
+                type = extractGroceryType(groceryTypes);
+                //Set boolean flag to true
+                found = true;
+            }//End of if statement to check the current item name
+        }//End of while loop to iterate
+        Log.d("Ent_FindCatById","Enter the findCategoryById method in the MainActivity class.");
+        return type;
+    }//End of findCategoryById method
+
+
 
 }//End of TaskDB class

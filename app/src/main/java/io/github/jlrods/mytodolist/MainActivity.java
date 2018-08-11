@@ -3,8 +3,14 @@ package io.github.jlrods.mytodolist;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
@@ -13,7 +19,7 @@ import android.view.MenuItem;
 
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener{
     //Define global varaibles and constants
     //Declare a TaskDB object to create the database and manage different db operations
     private TasksDB db;
@@ -27,6 +33,11 @@ public class MainActivity extends AppCompatActivity {
     private static ArrayList<Category> categories;
     //Declare global list to hold the current grocery objects that exist in the database
     private static ArrayList<GroceryType> groceryTypes;
+    //Declare variables to work with RecyclerView class
+    private RecyclerView recyclerView;
+    public TaskAdapter taskAdapter;
+    public GroceryAdapter groceryAdapter;
+    private RecyclerView.LayoutManager layoutManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,15 +45,26 @@ public class MainActivity extends AppCompatActivity {
         //Instantiate the database manager object
         this.db = new TasksDB(this);
         //Populate the list of Categories
-        categories = db.getCategoryList();
+        //categories = db.getCategoryList();
         //Populate the list of Grocery types
-        groceryTypes = db.getGroceryTypeList();
+        //groceryTypes = db.getGroceryTypeList();
         //Populate list of groceries
-        groceries = db.getGroceryList("SELECT * FROM GROCERIES ORDER BY TypeOfGrocery ASC");
+        //groceries = db.getGroceryList("SELECT * FROM GROCERIES ORDER BY TypeOfGrocery ASC");
         //Popoulate the Taksk list
-        tasks = db.getTaskList("SELECT * FROM TASK");
+        //tasks = db.getTaskList("SELECT * FROM TASK");
         //Set layout for main activity
         setContentView(R.layout.activity_main);
+
+        //
+        cursor = db.runQuery("SELECT * FROM TASK");
+        cursor.moveToFirst();
+        //RecycleView settings
+        recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
+        taskAdapter = new TaskAdapter(this,db,cursor);
+        recyclerView.setAdapter(taskAdapter);
+        layoutManager = new LinearLayoutManager(this);
+        recyclerView.setLayoutManager(layoutManager);
+
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -54,6 +76,15 @@ public class MainActivity extends AppCompatActivity {
                         .setAction("Action", null).show();
             }
         });
+
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        drawer.addDrawerListener(toggle);
+        toggle.syncState();
+
+        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        navigationView.setNavigationItemSelectedListener(this);
     }
 
     @Override
@@ -161,4 +192,46 @@ public class MainActivity extends AppCompatActivity {
         return type;
     }//End of the findGroceryTypeById method
 
+    @SuppressWarnings("StatementWithEmptyBody")
+    @Override
+    public boolean onNavigationItemSelected(MenuItem item) {
+        // Handle navigation view item clicks here.
+        int id = item.getItemId();
+
+        if (id == R.id.nav_all) {
+            // Handle the camera action
+        } else if (id == R.id.nav_grocery) {
+            cursor = db.runQuery("SELECT * FROM GROCERIES ORDER BY TypeOfGrocery ASC");
+            cursor.moveToFirst();
+            //RecycleView settings
+            //recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
+            groceryAdapter = new GroceryAdapter(this,db,cursor);
+            recyclerView.setAdapter(groceryAdapter);
+            layoutManager = new LinearLayoutManager(this);
+            recyclerView.setLayoutManager(layoutManager);
+
+        } else if (id == R.id.nav_slideshow) {
+
+        } else if (id == R.id.nav_manage) {
+
+        } else if (id == R.id.nav_share) {
+
+        } else if (id == R.id.nav_send) {
+
+        }
+
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        drawer.closeDrawer(GravityCompat.START);
+        return true;
+    }
+
+    @Override
+    public void onBackPressed() {
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        if (drawer.isDrawerOpen(GravityCompat.START)) {
+            drawer.closeDrawer(GravityCompat.START);
+        } else {
+            super.onBackPressed();
+        }
+    }
 }//End of the MainActivity class
