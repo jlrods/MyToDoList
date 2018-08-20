@@ -6,7 +6,7 @@
 
 
     <CheckBox
-        android:id="@+id/checkBoxGrocery"
+        android:id="@+id/cbGrocery"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
@@ -16,17 +16,17 @@
         android:gravity="center_vertical"/>
 
     <TextView
-        android:id="@+id/groceryName"
+        android:id="@+id/tvGroceryName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Grocery name"
-        android:layout_toRightOf="@id/checkBoxGrocery"
+        android:layout_toRightOf="@id/cbGrocery"
         android:layout_centerVertical="true"
 
         android:textAppearance="?android:attr/textAppearanceMedium"/>
 
     <TextView
-        android:id="@+id/groceryType"
+        android:id="@+id/tvGroceryType"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Grocery Type"

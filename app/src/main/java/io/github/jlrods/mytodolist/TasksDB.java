@@ -27,13 +27,14 @@ public class TasksDB extends SQLiteOpenHelper {
         //Create CATEGORY table
         db.execSQL("CREATE TABLE CATEGORY (_id INTEGER PRIMARY KEY AUTOINCREMENT,Name TEXT);");
         //Populate the CATEGORY table with different categories for the task lists
+        db.execSQL("INSERT INTO CATEGORY VALUES(null, 'All');");
         db.execSQL("INSERT INTO CATEGORY VALUES(null, 'Home');");
         db.execSQL("INSERT INTO CATEGORY VALUES(null, 'Work');");
         db.execSQL("INSERT INTO CATEGORY VALUES(null, 'Social');");
         db.execSQL("INSERT INTO CATEGORY VALUES(null, 'Health');");
-        db.execSQL("INSERT INTO CATEGORY VALUES(null, 'College');");
+        db.execSQL("INSERT INTO CATEGORY VALUES(null, 'Colege');");
         db.execSQL("INSERT INTO CATEGORY VALUES(null, 'Groceries');");
-        db.execSQL("INSERT INTO CATEGORY VALUES(null, 'Travel');");
+        db.execSQL("INSERT INTO CATEGORY VALUES(null, 'Tralvel');");
 
         //Create the PRIORITY table
         db.execSQL("CREATE TABLE PRIORITY (_id INTEGER PRIMARY KEY AUTOINCREMENT,Name TEXT);");
@@ -790,6 +791,26 @@ public class TasksDB extends SQLiteOpenHelper {
         Log.d("Ent_FindCatById","Enter the findCategoryById method in the MainActivity class.");
         return type;
     }//End of findCategoryById method
+
+    //Method to Update the isSelected attribure of a Task or Grocery
+    public boolean updateIsSelected(String table, int id,boolean isSelected){
+        //Declare and instantiate a new database object to handle the database operations
+        SQLiteDatabase bd = getWritableDatabase();
+        //Declare and initialize a query string variables
+        boolean success=false;
+        String update = "UPDATE ";
+        String set =" SET IsSelected = ";
+        String where = " WHERE _id = ";
+        if(table.equals("Groceries")){
+            table= table.toUpperCase();
+        }else{
+            table = "TASK";
+        }
+        String sql = update+table+set+toInt(isSelected)+where+id;
+        //Execure the sql command to update corresponding table
+        bd.execSQL(sql);
+        return success;
+    }
 
 
 
