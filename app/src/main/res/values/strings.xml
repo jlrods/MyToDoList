@@ -7,7 +7,10 @@
     <string name="about">About...</string>
     <string name="search">Search</string>
     <string name="checkedOnly">Checked items only</string>
+    <string name="checkedTask">Checked tasks only</string>
+    <string name="checkedGrocery">Checked groceries</string>
     <string name="markDone">Mark as done</string>
+    <string name="filterByType">Filter by type</string>
     <string name="hintSearchTask">Enter the text  you want to search...</string>
     <string name="cancel">Cancel</string>
     <string name="searchTask">Search Task</string>

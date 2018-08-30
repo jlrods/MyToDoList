@@ -32,9 +32,9 @@ public class TasksDB extends SQLiteOpenHelper {
         db.execSQL("INSERT INTO CATEGORY VALUES(null, 'Work');");
         db.execSQL("INSERT INTO CATEGORY VALUES(null, 'Social');");
         db.execSQL("INSERT INTO CATEGORY VALUES(null, 'Health');");
-        db.execSQL("INSERT INTO CATEGORY VALUES(null, 'Colege');");
+        db.execSQL("INSERT INTO CATEGORY VALUES(null, 'College');");
         db.execSQL("INSERT INTO CATEGORY VALUES(null, 'Groceries');");
-        db.execSQL("INSERT INTO CATEGORY VALUES(null, 'Tralvel');");
+        db.execSQL("INSERT INTO CATEGORY VALUES(null, 'Travel');");
 
         //Create the PRIORITY table
         db.execSQL("CREATE TABLE PRIORITY (_id INTEGER PRIMARY KEY AUTOINCREMENT,Name TEXT);");
@@ -46,20 +46,20 @@ public class TasksDB extends SQLiteOpenHelper {
         db.execSQL("INSERT INTO PRIORITY VALUES (null, '"+Priority.URGENT.toString()+"');");
 
         //Create the GROCERY_TYPE TABLE
-        db.execSQL("CREATE TABLE GROCERY_TYPE(_id INTEGER PRIMARY KEY AUTOINCREMENT,Name TEXT);");
-        //Populate the GROCERY_TYPE table
-        db.execSQL("INSERT INTO GROCERY_TYPE VALUES(null, 'Meats');");
-        db.execSQL("INSERT INTO GROCERY_TYPE VALUES(null, 'Dairy');");
-        db.execSQL("INSERT INTO GROCERY_TYPE VALUES(null, 'Fruits');");
-        db.execSQL("INSERT INTO GROCERY_TYPE VALUES(null, 'Vegetables');");
-        db.execSQL("INSERT INTO GROCERY_TYPE VALUES(null, 'Bakery');");
-        db.execSQL("INSERT INTO GROCERY_TYPE VALUES(null, 'Deli');");
-        db.execSQL("INSERT INTO GROCERY_TYPE VALUES(null, 'Canned');");
-        db.execSQL("INSERT INTO GROCERY_TYPE VALUES(null, 'Sebas');");
-        db.execSQL("INSERT INTO GROCERY_TYPE VALUES(null, 'Toiletries');");
-        db.execSQL("INSERT INTO GROCERY_TYPE VALUES(null, 'Cleaning');");
-        db.execSQL("INSERT INTO GROCERY_TYPE VALUES(null, 'General');");
+        db.execSQL("CREATE TABLE GROCERY_TYPE(_id INTEGER PRIMARY KEY AUTOINCREMENT,Name TEXT, IsInFilter INTEGER);");
+        db.execSQL("INSERT INTO GROCERY_TYPE VALUES(null, 'Meats',0);");
+        db.execSQL("INSERT INTO GROCERY_TYPE VALUES(null, 'Dairy',0);");
+        db.execSQL("INSERT INTO GROCERY_TYPE VALUES(null, 'Fruits',0);");
+        db.execSQL("INSERT INTO GROCERY_TYPE VALUES(null, 'Vegetables',0);");
+        db.execSQL("INSERT INTO GROCERY_TYPE VALUES(null, 'Bakery',0);");
+        db.execSQL("INSERT INTO GROCERY_TYPE VALUES(null, 'Deli',0);");
+        db.execSQL("INSERT INTO GROCERY_TYPE VALUES(null, 'Canned',0);");
+        db.execSQL("INSERT INTO GROCERY_TYPE VALUES(null, 'Sebas',0);");
+        db.execSQL("INSERT INTO GROCERY_TYPE VALUES(null, 'Toiletries',0);");
+        db.execSQL("INSERT INTO GROCERY_TYPE VALUES(null, 'Cleaning',0);");
+        db.execSQL("INSERT INTO GROCERY_TYPE VALUES(null, 'General',0);");
 
+        //Populate the GROCERY_TYPE table
         //Create the GROCERIES TABLE
         db.execSQL("CREATE TABLE GROCERIES(_id INTEGER PRIMARY KEY AUTOINCREMENT,Name TEXT, TypeOfGrocery INTEGER, IsSelected INTEGER);");
         //Populate the GROCERIES table with an initial set of common grocery products
@@ -498,10 +498,13 @@ public class TasksDB extends SQLiteOpenHelper {
         int id;
         //Declare a string object to hold the name attribute retrieved from the cursor
         String name="";
+        //Declare a boolean to hold the isInFilter attribute
+        int isInFilter = 0;
         //Retrieve the id value from the cursor object
         id = c.getInt(0);
         name = c.getString(1);
-        type = new GroceryType(id,name);
+        isInFilter = c.getInt(2);
+        type = new GroceryType(id,name,toBoolean(isInFilter));
         Log.d("Ext_ExtractGroceryType","Exit extractGroceryType method in the TaskDB class.");
         return type;
     }//End of extractGroceryType method
@@ -810,7 +813,21 @@ public class TasksDB extends SQLiteOpenHelper {
         //Execure the sql command to update corresponding table
         bd.execSQL(sql);
         return success;
-    }
+    }//End of updateIsSelected method
+
+    //Method to update the isInFilter attribute of the Grocery Type table
+    public boolean updateIsInFilter(int id, boolean isInFilter){
+        //Declare and instantiate a new database object to handle the database operations
+        SQLiteDatabase bd = getWritableDatabase();
+        //Declare and initialize a query string variables
+        boolean success=false;
+        String sql = "UPDATE GROCERY_TYPE SET IsInFilter = "+toInt(isInFilter)+" WHERE _id = "+id;
+        //Execure the sql command to update corresponding table
+        bd.execSQL(sql);
+        return success;
+    }//End of updateIsInFilter method
+
+
 
 
 
