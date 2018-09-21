@@ -34,9 +34,9 @@ import java.util.ArrayList;
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener{
     //Define global varaibles and constants
     //Declare a TaskDB object to create the database and manage different db operations
-    private TasksDB db;
+    public static TasksDB db;
     //A cursor object to hold data retrieved from database queries
-    private Cursor cursor;
+    private static Cursor cursor;
     //Declare gobals list to hold the current task objects
     private static ArrayList<Task> tasks;
     //Declare global list to hold the current grocery objectes that exist in the database
@@ -47,24 +47,24 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private static ArrayList<GroceryType> groceryTypes;
     //Declare variables to work with RecyclerView class
     private RecyclerView recyclerView;
-    public TaskAdapter taskAdapter;
-    public GroceryAdapter groceryAdapter;
+    public static TaskAdapter taskAdapter;
+    public static GroceryAdapter groceryAdapter;
     private RecyclerView.LayoutManager layoutManager;
     //Declare variable to define the current list that is selected
-    Category currentCategory;
+    private static Category currentCategory;
     //Declare global variables to handle UI icon menu
-    TextView tvCurrentList;
-    CheckBox cbOnlyChecked;
-    TextView tvOnlyChecked;
-    ImageView imgHighlightFilter;
-    TextView tvHighlightFilter;
+    private TextView tvCurrentList;
+    private CheckBox cbOnlyChecked;
+    private TextView tvOnlyChecked;
+    private ImageView imgHighlightFilter;
+    private TextView tvHighlightFilter;
     //Declare global variable list to hold the current categories selected in the filter menu. This data will come from the DB
-    ArrayList selectedTypes = new ArrayList();
-    boolean[] selectedTypesListPosition ;
+    private static ArrayList selectedTypes = new ArrayList();
+    private static boolean[] selectedTypesListPosition ;
     //Constants
     private static final String groceryCategory = "Groceries";
     private static final String allCategory ="All";
-
+    private static String dateFormat ="MMM dd yyyy";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -98,7 +98,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             }//End of listener
         });//End of setOncheckedChangeListener method
         //Populate the cursor object with data from the task table (This might be changed from the settings menu, to have a different default start up list)
-        this.cursor = db.runQuery("SELECT * FROM TASK");
+        this.cursor = db.runQuery("SELECT * FROM TASK ORDER BY Category ASC");
         //Move cursor to the first position. The runQuery method returns a cursor with no position set yet
         this.cursor.moveToFirst();
         //RecycleView settings
@@ -127,10 +127,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     //Check if any filter has been selected
                     if(cbOnlyChecked.isChecked()){
                         //If the global ccheck box is checked, filter the selected items only
-                        sql = "SELECT * FROM TASK WHERE IsSelected = 1";
+                        sql = "SELECT * FROM TASK WHERE IsSelected = 1 ORDER BY Category ASC";
                     }else{
                         //otherwise, retrieve everything from Task table
-                        sql ="SELECT * FROM TASK";
+                        sql ="SELECT * FROM TASK ORDER BY Category ASC";
                     }//End of if else statement
                     //Update the isSelected attribute (un)checked task
                     db.updateIsSelected(currentCategory.getName().toString(),task.getId(),isChecked);
@@ -171,8 +171,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                throwAddTaskActivity(null);
+                /*Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+                        .setAction("Action", null).show();*/
             }//End of onClick method for the floating button
         });//End of setOnClickListener method
 
@@ -208,6 +209,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }else if(id==R.id.search){
             this.search();
             return true;
+        }else if(id == R.id.delete){
+            return this.delete();
         }
 
         return super.onOptionsItemSelected(item);
@@ -236,7 +239,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     //Otherwise, increase the iterator
                     i++;
                 }//End of if else statement to check current item in the list
-            }while(!found && i <= categories.size());
+            }while(!found && i < categories.size());
         }//End of if statement to check Category Array List is not null or empty
         Log.d("Ent_FindCatById","Enter the findCategoryById method in the MainActivity class.");
         return category;
@@ -290,7 +293,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 }else{
                     i++;
                 }//End of if else statement to check current item in the list
-            }while(!found && i <= groceryTypes.size());
+            }while(!found && i < groceryTypes.size());
         }//End of if statement to check GroceryType Array List is not null or empty
         Log.d("Ext_FindGroceryTypeById","Exit the findGroceryTypeById method in the MainActivity class.");
         return type;
@@ -315,7 +318,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 }else{
                     i++;
                 }//End of if else statement to check current item in the list
-            }while(!found && i <= groceryTypes.size());
+            }while(!found && i < groceryTypes.size());
         }//End of if statement to check GroceryType Array List is not null or empty
         Log.d("Ext_FindGroceryTByName","Exit the findGroceryTypeByName method in the MainActivity class.");
         return type;
@@ -340,7 +343,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             tvHighlightFilter.setTextColor(getResources().getColor(R.color.colorSecondayText));
             this.recyclerView.setAdapter(taskAdapter);
             //Call method to update the RecyclerView data set and update ui
-            this.updateRecyclerViewData("SELECT * FROM TASK");
+            this.updateRecyclerViewData("SELECT * FROM TASK ORDER BY Category ASC");
             //Set the OnCheckedChangedListener for the task adapter (even though a new taskAdapter has not been created, sometimes the listener is lost)
             this.taskAdapter.setOnItemCheckedChangeListener(new CheckBox.OnCheckedChangeListener() {
                 @Override
@@ -360,15 +363,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                         //Check if any filter has been selected
                         if(cbOnlyChecked.isChecked()){
                             //If the global ccheck box is checked, filter the selected items only
-                            sql = "SELECT * FROM TASK WHERE IsSelected = 1";
+                            sql = "SELECT * FROM TASK WHERE IsSelected = 1 ORDER BY Category ASC";
                         }else{
                             //otherwise, retrieve everything from Task table
-                            sql ="SELECT * FROM TASK";
+                            sql ="SELECT * FROM TASK ORDER BY Category ASC";
                         }//End of if else statement
                         //Update database with the isSelected attribute of current task which checkbox was toggled
                         db.updateIsSelected(currentCategory.getName().toString(),task.getId(),isChecked);
                         //Call method to update the adapter and the recyclerView
-                        updateRecyclerViewData("SELECT * FROM TASK");
+                        updateRecyclerViewData("SELECT * FROM TASK ORDER BY Category ASC");
                     }//End of if statement to check the current task actually changed isSelected stated (otherwise is the recyclerview recycling a  View)
                 }//End of onCheckedChanged method
             });//End of setOnItemCheckedChange listener method
@@ -455,20 +458,20 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }//End of onNavigationItemSelected method
 
     //Method to update the data set in the RecyclerView adapter
-    public void updateRecyclerViewData(String sql){
+    public static void updateRecyclerViewData(String sql){
         Log.d("Ent_updateRecViewData","Enter the updateRecyclerViewData method in the MainActivity class.");
         cursor = db.runQuery(sql);
         //Move to first row of cursor if not empty
         cursor.moveToFirst();
         //Check what type of adapter has to be used TaskAdapter or GroceryAdapter
-        if(this.currentCategory.equals(findCategoryByName(groceryCategory))){
+        if(currentCategory.equals(findCategoryByName(groceryCategory))){
             //Refresh the new data set on the grocery adapter
-            this.groceryAdapter.setCursor(cursor);
-            this.groceryAdapter.notifyDataSetChanged();
+            groceryAdapter.setCursor(cursor);
+            groceryAdapter.notifyDataSetChanged();
         }else{
             //Refresh the new data set on the task adapter
-            this.taskAdapter.setCursor(cursor);
-            this.taskAdapter.notifyDataSetChanged();
+            taskAdapter.setCursor(cursor);
+            taskAdapter.notifyDataSetChanged();
         }//End of if else statement
         Log.d("Ext_updateRecViewData","Exit the updateRecyclerViewData method in the MainActivity class.");
     }//End of updateRecyclerViewData method
@@ -545,14 +548,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         if (currentCategory.equals(this.findCategoryByName("Groceries"))){
             //Clear selection of grocery type filters
             this.clearTypeFilter();
-            sql ="SELECT * FROM GROCERIES WHERE isSelected = 1";
+            sql ="SELECT * FROM GROCERIES WHERE isSelected = 1 ORDER BY TypeOfGrocery ASC";
             //Call method to update the adapter and the recyclerView
             updateRecyclerViewData(sql);
         }else{
             //Otherwise, check if the All category has been selected
             if(currentCategory.equals(findCategoryByName("All"))){
                 //Define sql query to retrieve data from task table where isSelected is 1
-                sql = "SELECT * FROM TASK WHERE isSelected = 1";
+                sql = "SELECT * FROM TASK WHERE isSelected = 1 ORDER BY Category ASC";
             }else{
                 //Otherwise, define a query to retrieve data from task table where isSelected is 1 and Category mateches the selected one
                 sql = "SELECT * FROM TASK WHERE Category = " + currentCategory.getId() + " AND isSelected = 1";
@@ -570,12 +573,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         //Check the current category object... Depending on if it is Groceries or any other the actions will change
         if (currentCategory.equals(this.findCategoryByName(groceryCategory))){
             //Define sql query to retrieve data from groceries table
-            sql = "SELECT * FROM GROCERIES";
+            sql = "SELECT * FROM GROCERIES ORDER BY TypeOfGrocery ASC";
         }else{
             //Check if the All category has been selected
             if(currentCategory.equals(findCategoryByName(allCategory))){
                 //Define query to retrieve data from the task table
-                sql = "SELECT * FROM TASK";
+                sql = "SELECT * FROM TASK ORDER BY Category ASC";
             }else{
                 //Otherwise, define query to retrieve data from the Task table where category matches the current one
                 sql ="SELECT * FROM TASK WHERE Category = " + currentCategory.getId();
@@ -648,7 +651,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                             tvHighlightFilter.setTextColor(getResources().getColor(R.color.colorAccent));
                         }else{
                             //Otherwise the full grocery list will be displayed
-                            sql ="SELECT * FROM GROCERIES";
+                            sql ="SELECT * FROM GROCERIES ORDER BY TypeOfGrocery ASC";
                             //Chage the filter background colour to white
                             tvHighlightFilter.setTextColor(getResources().getColor(R.color.colorSecondayText));
                         }//End of if else statement to check there is one selection
@@ -689,7 +692,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             }//End of if else statement
         }//End of for loop
         //Close the sql string by appending a closing round bracket
-        sql+= ")";
+        sql+= " ) ORDER BY TypeOfGrocery ASC";
         Log.d("Ext_listGrocFilt","Exit listGroceriesFiltered method in MainActivity class.");
         return sql;
     }//End of listGroceriesFiltered
@@ -754,6 +757,177 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         } //End of if statement to check slected types list size
         Log.d("Ext_clearType","Exit clearTypeFilter method in the MainActivity class.");
     }//End of clearTypeFilter method#
+
+    //Method to throw new AddTaskActivity
+    private  void throwAddTaskActivity(View view){
+        Log.d("Ent_throwAddTask","Enter throwAddTaskActivity method in the MainActivity class.");
+        //Declare and instantiate a new intent object
+        Intent i= new Intent(MainActivity.this,AddTaskActivity.class);
+        //Add extras to the intent object, specifically the current category where the add button was pressed from
+        i.putExtra("category",this.currentCategory.toString());
+        //Start the addTaskActivity class
+        startActivity(i);
+        Log.d("Ext_throwAddTask","Exit throwAddTaskActivity method in the MainActivity class.");
+    }//End of throwAddTaskActivity method
+
+    //Method to delete a task or a grocery
+    private boolean delete(){
+        Log.d("Ent_delete","Enter delete method in the MainActivity class.");
+        //Declare and instantiate a boolean  varuable which will return if the delete method was successful or not
+        boolean result = false;
+        //Declare a cursor object to query the database and hold the data
+        final Cursor c;
+        //Declare a String object to hold the message to be displayed on the  dialog box that will prompt the user the tasks or groceries to be deleted
+        String dialogMessage;
+        //Check current property (is it groceries or any other?)
+        if(currentCategory.equals(findCategoryByName(getGroceryCategory()))){
+            //if the current category is the Groceries
+            //Run query to filter all the selected items in the Groceries table
+            c= db.runQuery("SELECT * FROM GROCERIES WHERE isSelected = 1 ORDER BY TypeOfGrocery ASC");
+            //Initialize the dialogMessage variable.
+            dialogMessage = "";
+            //Check the cursor is not empty an d has more than one row
+            if(c.getCount()>1){
+                //Set the dialog box message to refer to several groceries
+                dialogMessage = "Are you sure you want to delete the following groceries?: ";
+                //Use a while loop to iterate through the cursor and obtain the name of each grocery selected to be deleted
+                while(c.moveToNext()){
+                    //Add the grocery name to the dialogMessage string
+                    dialogMessage += "\n- "+c.getString(1);
+                }//End of while loop
+                //If the cursor has less than 2 row, check is not empty and has at least one row
+            }else if(c != null && c.getCount()>0){
+                    //Move to first position of cursor.
+                    c.moveToFirst();
+                    //Set the dialog box message to be singular and refer to only one grocery and add its name (extracted from cursor)
+                    dialogMessage = "Are you sure you want to delete the following grocery: " +c.getString(1)+"?";
+            }else{
+                //If cursor did not comply previous conditions, means the cursor is empty or null. Display error message for that
+                dialogMessage ="No grocery is selected to be deleted.";
+            }//End of if else statement to check the number of groceries to be deleted
+            //Display a warning message asking user if he/she wants to delete the selected items
+            new AlertDialog.Builder(this)
+                    .setTitle(R.string.deleteGroceryTitle)//Set title
+                    .setMessage(dialogMessage)// Set the message as per previous dynamic selection
+                    .setPositiveButton("Ok",new DialogInterface.OnClickListener(){//Define the positive button
+                        public void onClick(DialogInterface dialog,int whichButton){
+                            //Check the cursor is not empty and is not null
+                            if(c != null && c.getCount()>0){
+                                //Move cursor to first position
+                                c.moveToFirst();
+                                //do while loop to iterate through the cursor and delete each item selected
+                                do {
+                                    //Declare and instantiate a grocery object from data in the current row of cursor
+                                    Grocery grocery = db.extractGrocery(c);
+                                    //Call the deleteItem method and pass in the grocery object to be deleted
+                                    boolean result = db.deleteItem(grocery);
+                                }while(c.moveToNext());//End of while loop to delete the selected groceries
+                                //Declare and instantiate as null a string object to hold the sql query to run. Depending on the current category, different query will be run
+                                String sql="SELECT * FROM GROCERIES ORDER BY TypeOfGrocery ASC";
+                                //Call method to update the adapter and the recyclerView
+                                updateRecyclerViewData(sql);
+                            }//End of if statement to check cursor is not null or empty
+                        }//End of Onclick method
+                    })//End of setPositiveButton method
+                    .setNegativeButton(R.string.cancel,null)
+                    .show();
+            //Return true if method is successful
+            result = true;
+        }else{
+            //For any other category
+            //Declare and initialize an empty string object to hold the sql query that will be run to retrive data from database. Depending on current category different sql query will be required
+            String sql ="";
+            //Check if the current category is All tasks or a specific category has been selected
+            if(currentCategory.equals(findCategoryByName(allCategory))){
+                //Define sql query that includes all the categories
+                sql = "SELECT * FROM TASK WHERE isSelected = 1 ORDER BY Category ASC" ;
+            }else{
+                //Define a sql query for a specific category. Category id comes from the current category object
+                sql = "SELECT * FROM TASK WHERE isSelected = 1 AND Category = "+ currentCategory.getId();
+            }//End of if else statement
+            //Retrieve data from DB by running sql query defined above
+            c= db.runQuery(sql);
+            //Initialize the dialogMessage string to be empty
+            dialogMessage = "";
+            //Check the cursor is not empty an d has more than one row
+            if(c.getCount()>1){
+                //Set the dialog box message to refer to several tasks
+                dialogMessage = "Are you sure you want to delete the following tasks?: ";
+                //Use a while loop to iterate through the cursor and obtain the description of each task selected to be deleted
+                while(c.moveToNext()){
+                    dialogMessage += "\n- "+c.getString(1);
+                }//End of while loop
+                //If the cursor has less than 2 rows, check is not empty and has at least one row
+            }else if(c != null && c.getCount()>0){
+                //Move to first position of cursor.
+                c.moveToFirst();
+                //Set the dialog box message to be singular and refer to only one task and add its descriotion (extracted from cursor)
+                dialogMessage = "Are you sure you want to delete the following task: " +c.getString(1)+"?";
+            }else{
+                //If cursor did not comply previous conditions, means the cursor is empty or null. Display error message for that
+                dialogMessage ="No task is selected to be deleted.";
+            }//End of if else statement to check the number of groceries to be deleted
+            //Display a warning message asking user if he/she wants to delete the selected items
+            new AlertDialog.Builder(this)
+                    .setTitle(R.string.deleteTaskTitle)//Set title
+                    .setMessage(dialogMessage)// Set the message as per previous dynamic selection
+                    .setPositiveButton("Ok",new DialogInterface.OnClickListener(){//Define the positive button
+                        public void onClick(DialogInterface dialog,int whichButton){
+                            //Check the cursor is not empty and is not null
+                            if(c != null && c.getCount()>0){
+                                //Move cursor to first position
+                                c.moveToFirst();
+                                //do while loop to iterate through the cursor and delete each item selected
+                                do {
+                                    //Declare and instantiate a task object from data in the current row of cursor
+                                    Task task= db.extractTask(c);
+                                    //Call the deleteItem method and pass in the grocery object to be deleted
+                                    boolean result = db.deleteItem(task);
+                                }while(c.moveToNext());//End of while loop to delete the selected groceries
+                                //Declare and instantiate as null a string object to hold the sql query to run. Depending on the current category, different query will be run
+                                String sql="";
+                                //Check the current category to delete the tasks from
+                                if(currentCategory.equals(findCategoryByName(allCategory))){
+                                    //Define a sql for all the task categories
+                                    sql = "SELECT * FROM TASK ORDER BY Category ASC";
+                                }else{
+                                    //Define a sql query for specific category, coming from the current category id
+                                    sql = "SELECT * FROM TASK WHERE Category = "+currentCategory.getId()+ "ORDER BY Category ASC";
+                                }
+                                //Call method to update the adapter and the recyclerView
+                                updateRecyclerViewData(sql);
+                            }//End of if statement to check cursor is not null or empty
+                        }//End of Onclick method
+                    })//End of setPositiveButton method
+                    .setNegativeButton(R.string.cancel,null)
+                    .show();
+        }
+        Log.d("Ext_delete","Exit delete method in the MainActivity class.");
+        //Return result whihc should be true if the whole method was completed
+        return result;
+    }// End of delete method
+
+    public static String getGroceryCategory(){
+        return groceryCategory;
+    }
+
+    public static String getAllCategory(){
+        return allCategory;
+    }
+
+    public static String getDateFormat(){
+        return MainActivity.dateFormat;
+    }
+
+    public static void setDateFormat(String dateFormat){
+        MainActivity.dateFormat = dateFormat;
+    }
+
+    public static Category getCurrentCategory(){return MainActivity.currentCategory;}
+
+    public static ArrayList getSelectedTypes(){return MainActivity.selectedTypes;}
+
+    public static boolean[] getSelectedTypesListPosition(){return MainActivity.selectedTypesListPosition;}
 
     @Override
     public void onBackPressed() {
