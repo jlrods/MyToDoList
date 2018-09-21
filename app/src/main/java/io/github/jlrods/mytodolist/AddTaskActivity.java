@@ -65,8 +65,11 @@ public class AddTaskActivity extends AppCompatActivity implements DatePickerDial
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.d("Ent_OnCreateAddTask","Enter the onCreate method in the AddTaskActivity class.");
+        //Set layout for this activity
         setContentView(R.layout.activity_add_task);
+        //Extract extra data from Bundle object
         extras = getIntent().getExtras();
+        //Initialize view object from layout to have access to them and set different texts and other properties
         this.tvTaskTag = (TextView) findViewById(R.id.tvDescriptionTag);
         this.etDescription = (EditText) findViewById(R.id.etDescription);
         this.tvCategoryTag = (TextView) findViewById(R.id.tvCategoryTag);
@@ -77,21 +80,27 @@ public class AddTaskActivity extends AppCompatActivity implements DatePickerDial
         this.layoutDate = findViewById(R.id.layoutDate);
         this.layoutHour = findViewById(R.id.layoutHour);
         this.cbIsAppointment = findViewById(R.id.cbIsAppointment);
+        //Set onChangeState listener of check box
         this.cbIsAppointment.setOnCheckedChangeListener(
                 new CompoundButton.OnCheckedChangeListener() {
                     @Override
                     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                        //Call method to hide appointment detail layouts. Will be visible only if the isAppointment cbox is checked
                         hideAppointmentDetails(isChecked);
-                    }
-                }
-        );
+                    }//End of onCheckedChanged method
+                }//End of onCheckedchangeListener method
+        );// End of setonCheckedChagnedListener
+        //Continue with view objects initialization
         this.layoutNotes = findViewById(R.id.layoutNotes);
+        //Declare and initialize empty strings to work with different sql queries during the method
         String sql = "";
         String table="";
+        //Declare two spinner adapters, one for the category spinner and one for the priority spinner
         SpinnerAdapter adapterCategory;
         SpinnerAdapter adapterPriority;
         //Check the current poperty where the activity was called form (Groceries or any other task)
         if(extras.getString("category").equals(MainActivity.getGroceryCategory())){
+            //If the item to be added is a Grocery:
             //Set the taskTag text to Grocery
             this.tvTaskTag.setText(R.string.groceryTag);
             //Set the hint for description to refer to a grocery name instead of a task description
@@ -110,54 +119,63 @@ public class AddTaskActivity extends AppCompatActivity implements DatePickerDial
             //Set the sipnner hint to refer to a grocery type
             spCategory.setPrompt("Select the grocery type...");
         }else{
-            //For all other tasks
+            //For all other task Categories
             //Set the description input text hint to refer to a task description
             this.etDescription.setHint(R.string.taskDescHint);
-            //Set the sql quesry to inquire CATEGORY table where the id is not the one for All and Groceries categories
+            //Set the sql query to inquire CATEGORY table where the id is not the one for All or Groceries categories
             sql = "SELECT * FROM CATEGORY WHERE _id NOT IN ( " +MainActivity.findCategoryByName(MainActivity.getAllCategory()).getId()+
                     ", "+MainActivity.findCategoryByName(MainActivity.getGroceryCategory()).getId()+")";
             //Set hint for category spinner to refer to a task category
             this.spCategory.setPrompt("Select the task category...");
-            //Run a sql query that will retrive the current priority items from DB
+            //Run a sql query that will retrieve the current priority items from DB
             cPriority = MainActivity.db.runQuery("SELECT * FROM PRIORITY");
             //Instantiate a new adapterPriority with current data set from cursor c
             adapterPriority = new SpinnerAdapter(this,cPriority,CursorAdapter.FLAG_REGISTER_CONTENT_OBSERVER);
             //Set the priority spinner adapter to be the one defined above
             this.spPriority.setAdapter(adapterPriority);
-            //Instantiate all the elements required for this activity... the ones not instantiated for adding a grocery task
-            //Allt he appointment related views
+            //Instantiate all the elements required for this activity... the ones not instantiated when adding a grocery task
+            //All the appointment related views:
             this.imgLogoDate = findViewById(R.id.imgLogoDate);
+            //Set onClickListener for the Date logo view
             this.imgLogoDate.setOnClickListener(new View.OnClickListener() {
                 @Override
+                //When the Date logo is clicked on, call the changeDate method
                 public void onClick(View v) {
                     changeDate();
                 }
-            });
+            });//End of setOnClickListener
             this.tvDate = findViewById(R.id.tvDate);
+            //Set the onClickListener for the Date text view
             this.tvDate.setOnClickListener(new View.OnClickListener() {
                 @Override
+                //When the Date text view is clicked on, call the changeDate method
                 public void onClick(View v) {
                     changeDate();
                 }
-            });
+            });//End onClickListner
             this.tvDate = findViewById(R.id.tvDate);
             this.tvHour = findViewById(R.id.tvHour);
+            //Set onClickListner for the hour text view
             this.tvHour.setOnClickListener(new View.OnClickListener() {
                 @Override
+                //When the hour text view is clicked on, call the changeHour method
                 public void onClick(View v) {
                     changeHour();
                 }
-            });
+            });//End of the onClickListner for the hour text view
             this.imgLogoHour = findViewById(R.id.imgLogoHour);
+            //Set the onClickLister for the hour logo view
             this.imgLogoHour.setOnClickListener(new View.OnClickListener() {
                 @Override
+                //When the Hour logo is clicked on, call the changeHour method
                 public void onClick(View v) {
                     changeHour();
                 }
-            });
+            });//End of the onClickListener for the hour logo view
             this.etNotes = findViewById(R.id.etNotes);
-        }//End of if else statement to check currrent category when the add task button was pressed
-        //Run a a sql query to retrieve the categroy data. This will vary depending on the current category when add button was pressed
+        }//End of if else statement to check current category when the add task button was pressed
+
+        //Run a a sql query to retrieve the categroy data. This will vary depending on the current category where add button was pressed from
         cCategory = MainActivity.db.runQuery(sql);
         //Set dataset of the category adapter , using cursor object above
         adapterCategory = new SpinnerAdapter(this,cCategory, CursorAdapter.FLAG_REGISTER_CONTENT_OBSERVER);
@@ -182,7 +200,6 @@ public class AddTaskActivity extends AppCompatActivity implements DatePickerDial
     }//End of hideAppointmentDetails method
 
 
-
     //Method to inflate the menu into the addTaskActivity
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -193,6 +210,7 @@ public class AddTaskActivity extends AppCompatActivity implements DatePickerDial
     //Method to check the menu item selected and execute the correspinding actions
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        Log.d("Ent_onOptItmAdd","Enter onOptionsItemSelected method in the AddTaskActivity class.");
         //Boolean to return method result
         boolean result = false;
         //Check the id of item selected in menu
@@ -227,9 +245,6 @@ public class AddTaskActivity extends AppCompatActivity implements DatePickerDial
                         //Check the id is correct by comparing the one used to create the Grocery object and the id coming from the DB after the insert item transaction.
                         if(id == idFromDB){
                             //Check if there is any filter activated to call the proper sql...
-                            /*if(MainActivity.getSelectedTypes().size()>0){
-
-                            }else if(){}*/
                             //Notify data set change
                             MainActivity.updateRecyclerViewData("SELECT * FROM GROCERIES ORDER BY TypeOfGrocery ASC");
                             //Display  message saying the grocery was added to the list
@@ -237,14 +252,16 @@ public class AddTaskActivity extends AppCompatActivity implements DatePickerDial
                             result = true;
                             finish();
                         }else{
+                            //Display error message in case the id number do not match
                             Toast.makeText(this,R.string.groceryAddedFailed,Toast.LENGTH_SHORT).show();
                             result = false;
-                        }
+                        }//End of if else statement to check ids
                     }else{
                         //Display error message via toast
                         Toast.makeText(this,R.string.groceryNameEmpty,Toast.LENGTH_SHORT).show();
-                    }
+                    }//End of if else statement to check the grocery description is not empty
                 }else{
+                    //In case the item to be added is a task and not a grocery
                     //Firstly, get the task description input by user. Declare and instantiate a string variable for that
                     String taskDescription = this.etDescription.getText().toString();
                     //Check the grocery name is not empty
@@ -255,12 +272,16 @@ public class AddTaskActivity extends AppCompatActivity implements DatePickerDial
                         String categoryName = cCategory.getString(1);
                         //Find a Caegory via MainActivity method to instantiate a new groceryType variable. This will be used to create a new Grocery object
                         Category category = MainActivity.findCategoryByName(categoryName);
-
+                        //Find a Priority via MainActivity method to instantiate a new Priority object.
                         Priority priority = Priority.findPriorityById(this.spPriority.getSelectedItemPosition());
+                        //Declare and initialize a long variable to hold the dueDate value. Assume there is not due date originally *set to -1).
                         long dueDate = -1;
+                        //Check if the isAppointment check box is checked by user
                         if(this.cbIsAppointment.isChecked()){
+                            //if it is, get the due date by calling getAppointmentDate method
                             dueDate = this.getAppointmentDate();
-                        }
+                        }//End of if statement to check the isAppointment checkbox is checked
+                        //Get the text from the notes text view
                         String notes = this.etNotes.getText().toString();
                         //Declare and instantiate a new cursor object to hold data from sql query to retrieve the max value from _id column in GROCERIES table
                         Cursor tempCursor = MainActivity.db.runQuery("SELECT MAX(_id) FROM TASK");
@@ -278,9 +299,6 @@ public class AddTaskActivity extends AppCompatActivity implements DatePickerDial
                         //Check the id is correct by comparing the one used to create the Grocery object and the id coming from the DB after the insert item transaction.
                         if(id == idFromDB){
                             //Check if there is any filter activated to call the proper sql...
-                            /*if(MainActivity.getSelectedTypes().size()>0){
-
-                            }else if(){}*/
                             //Notify data set change
                             MainActivity.updateRecyclerViewData("SELECT * FROM TASK ORDER BY Category ASC");
                             //Display  message saying the grocery was added to the list
@@ -288,18 +306,20 @@ public class AddTaskActivity extends AppCompatActivity implements DatePickerDial
                             result = true;
                             finish();
                         }else{
+                            //Display a message in case the ids do not match
                             Toast.makeText(this,R.string.groceryAddedFailed,Toast.LENGTH_SHORT).show();
                             result = false;
-                        }
+                        }//End of if esle statement to check the ids
                         result = true;
                     }else {
-                        //Display error message via toast
+                        //Display error message via toast if the task description was left empty
                         Toast.makeText(this, R.string.taskDesEmpty, Toast.LENGTH_SHORT).show();//End of
                     }//End of if else statement to check the task description is not empty
                 }//End of if else statement that checks the category passed in as extra info coming from MainActivity
                 //Add to a data base
                 break;
             case R.id.add_task_cancel:
+                //In case the X icon is pressed, just ignore all the data input and go back to previous activity
                 result = true;
                 finish();
                 break;
@@ -308,6 +328,7 @@ public class AddTaskActivity extends AppCompatActivity implements DatePickerDial
                 finish();
                 break;
         }
+        Log.d("Ext_onOptItmAdd","Exit onOptionsItemSelected method in the AddTaskActivity class.");
         return result;
     }// Fin de onOptionsItemSelected method
 
@@ -384,7 +405,6 @@ public class AddTaskActivity extends AppCompatActivity implements DatePickerDial
             }//End of if else statement to check it's morning time
             //Set callendar minute to be whatever is in substring from 3 to 5
             calendar.set(Calendar.MINUTE,Integer.valueOf(time.substring(3,5)));
-
         }//End of if else to check the tvHour text is empty or not
         //Add the hour argument with the current time in millisecs
         args.putLong("hour",calendar.getTimeInMillis());
@@ -392,55 +412,86 @@ public class AddTaskActivity extends AppCompatActivity implements DatePickerDial
         dialog.setArguments(args);
         //Display the dialog box for the date picker
         dialog.show(this.getSupportFragmentManager(), "hourSelector");
+        Log.d("Ext_chageHour","Exit changeHour method in the AddTaskActivity class.");
     }//End of changeHour method
 
-
+    //Method to update the Date text view with the date coming from the DialogDateSelector object
     @Override
     public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
+        Log.d("Ent_onDateSetAdd","Enter the onDateSet method in the AddTaskActivity class.");
+        //Declare and initialize a new Calendar object with current date and time
         Calendar calendar = Calendar.getInstance();
+        //Set the year, month and day, which were passed in as params
         calendar.set(year,month,dayOfMonth);
+        //Declare and isntantiate a new DateFormat object to display date in current format (This format may change based on the app settings)
         SimpleDateFormat format = new SimpleDateFormat(MainActivity.getDateFormat());
+        //Declare and instantiate a new date object, using the date set in calendar. Get the time in millisecs
         Date date = new Date(calendar.getTimeInMillis());
+        //Set the text in date text view acoording to the new date
         this.tvDate.setText(format.format(date));
+        Log.d("Ext_onDateSetAdd","Exit the onDateSet method in the AddTaskActivity class.");
     }//End of DatePicker method
 
+    //Method to update the time text view with the hour and mins which come from the DialogHourSelector object
     @Override
     public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+        Log.d("Ent_onTimeSetAdd","Enter the onTimeSet method in the AddTaskActivity class.");
+        //Declare and initialize a calendar with present time
         Calendar calendar = Calendar.getInstance();
-        //SimpleDateFormat format = new SimpleDateFormat(MainActivity.getDateFormat());
-        //Date date = new Date(calendar.getTimeInMillis());
+        //Declare and initialize empty string objects to construct the full time text
         String amPm = "";
         String hour = "";
         String min="0";
+        //Set the hour text to be the same as the hour passed in as a param
         hour += hourOfDay;
+        //Check if the that param is less than 12
         if(hourOfDay <12){
+            //That means it's the morning time
             amPm = "AM";
+            //Check if hour param is greater than 9 (10 or 11)
             if(hourOfDay >9 ){
+                //If that is the case, hour string is the same as the hour param
                 hour = String.valueOf(hourOfDay);
             }else {
+                //Otherwise, add a lead 0 to the string (07,08,09,etc)
                 hour = "0" + String.valueOf(hourOfDay);
-            }
+            }//end of if else that checks the hour param (morning case)
         }else if(hourOfDay == 12){
+            //If hour param is equal to 12, it will be considered as afternoon or night time
             amPm = "PM";
         }else if(hourOfDay>12){
+            //In case hour time is grater than 12 (13,14,15...)
+            //Set to PM hour
             amPm = "PM";
+            //Check if greater than 9PM
             if(hourOfDay > 21){
+                //In that case, set the hour text to be the difference between hour param and 12
                 hour = String.valueOf(hourOfDay-12);
             }else{
+                //Otherwise, do the same substraction as above and add a lead zero
                 hour = "0" + String.valueOf(hourOfDay-12);
-            }
-        }
+            }//End of if else statement to checkthe hour time (afternoon and night case)
+        }//End of if else statement that checks the hour param
+        //Check the minute param has only one digit (<10)
         if(minute < 10){
+            //if it is, add the value to the current 0 in the minute string
             min += minute;
         }else{
+            //Otherwise, reassign the value of minute string to be equal to exact minute param
             min= String.valueOf(minute);
-        }
+        }//End of if else statement that checks the minute param
         this.tvHour.setText(hour+":"+min+" "+amPm);
+        Log.d("Ext_onTimeSetAdd","Exit the onTimeSet method in the AddTaskActivity class.");
     }//End of onTimeSet method
 
+    //Method to get all the appointment date details coming from date and hour text views
     private long getAppointmentDate(){
+        Log.d("Ent_getAppointmentDate","Enter the getAppointmentDate method in the AddTaskActivity class.");
+        //Declare and initialize a new calendar with current time
         Calendar calendar = Calendar.getInstance();
+        //Declare a new date object
         Date date;
+        //Check if date text view is empty
         if(tvDate.getText().equals("")){
             //if that is the case, add an agument to hold the current time in millisecs
             date = Calendar.getInstance().getTime();
@@ -458,7 +509,9 @@ public class AddTaskActivity extends AppCompatActivity implements DatePickerDial
                 e.printStackTrace();
             }//End of try catch block
         }//End of if else statement to check the tvDate text is empty or not
+        //Set date recorded in text view into the calendar object
         calendar.setTime(date);
+        //Check if the hour text is empty
         if(tvHour.getText().equals("")){
             //If empty, set hour and minute of current date object to be at 00:00
             calendar.set(Calendar.HOUR_OF_DAY,0);
@@ -482,13 +535,19 @@ public class AddTaskActivity extends AppCompatActivity implements DatePickerDial
             }//End of if else statement to check it's morning time
             //Set callendar minute to be whatever is in substring from 3 to 5
             calendar.set(Calendar.MINUTE,Integer.valueOf(time.substring(3,5)));
-        }
+        }//End of if else statement that checks the hour text view text
+        //Initialize the date object with date and time extracted from text views
         date = calendar.getTime();
+        Log.d("Ext_getAppointmentDate","Exit the getAppointmentDate method in the AddTaskActivity class.");
         return date.getTime();
     }//Endof getAppointmentDate method
 
+    //Method to get The hour from
     private Date getHour(){
+        Log.d("Ent_getHour","Enter the getHour method in the AddTaskActivity class.");
+        //Declare and initialize a calender with current time and date
         Calendar calendar = Calendar.getInstance();
+        //Declare and instantiate a new date object
         Date date;
         //Check the date text is empty
         if(tvHour.getText().equals("")){
@@ -516,8 +575,8 @@ public class AddTaskActivity extends AppCompatActivity implements DatePickerDial
             //Set callendar minute to be whatever is in substring from 3 to 5
             calendar.set(Calendar.MINUTE,Integer.valueOf(time.substring(3,5)));
             date = calendar.getTime();
-        }
+        }//End of if else statement that check the hour text is not empty
+        Log.d("Ext_getHour","Exit the getHour method in the AddTaskActivity class.");
         return date;
     }//End of getHour method
 }//End of AddTaskActivity
-
