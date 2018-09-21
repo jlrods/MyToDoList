@@ -17,5 +17,30 @@
     <string name="searchExplanation">"Please type the text you are looking for:"</string>
     <string name="hingSearchGrocery">Enter the grocery you want to search...</string>
     <string name="searchGrocery">Search Grocery</string>
-
+    <string name="groceries">Groceries</string>
+    <string name="all">All</string>
+    <string name="groceryTag">Grocery:</string>
+    <string name="groceryHint">Enter the grocery name...</string>
+    <string name="categoryTag">Category:</string>
+    <string name="priorityTag">Priority:</string>
+    <string name="isApppointment">Is this an appointment?</string>
+    <string name="dateTag">Date:</string>
+    <string name="hourTag">Hour:</string>
+    <string name="notesTag">Notes:</string>
+    <string name="notesHint">Add some notes about your task...</string>
+    <string name="groceryTypeTag">Grocery type:</string>
+    <string name="taskDescHint">Enter the task description...</string>
+    <string name="spCategoryHint">Select the task category...</string>
+    <string name="spGrocTypeHint">Select the grocer y type...</string>
+    <string name="save">Save</string>
+    <string name="groceryAdded">The new grocery has been successfully added to your gorcery list</string>
+    <string name="taskAdded">The new task has been successfully added to your task list</string>
+    <string name="groceryAddedFailed">The new grocery was not included in the grocery list. Please, Try again.</string>
+    <string name="taskAddedFailed">The new task was not included in the grocery list. Please, Try again.</string>
+    <string name="groceryNameEmpty">The grocery name is blank. Please, type a name in.</string>
+    <string name="taskDesEmpty">The task descrption is blank. Please, type a description in.</string>
+    <string name="deleteGroceryTitle">Delete Groceries</string>
+    <string name="deleteGrocery">Are you sure you want to delete </string>
+    <string name="deleteGrocery1"> selected grocery(ies)?</string>
+    <string name="deleteTaskTitle">Delete Task</string>
 </resources>

@@ -282,7 +282,6 @@ public class TasksDB extends SQLiteOpenHelper {
     //Method to add a new task within the database
         public int addItem(Object item) {
         Log.d("Ent_addItem","Enter addItem method in TasksDB class.");
-
         //Declare and instantiate a new database object to handle the database operations
         SQLiteDatabase db = getWritableDatabase();
             //Declare and initialize a query string variables
@@ -295,7 +294,7 @@ public class TasksDB extends SQLiteOpenHelper {
             //Declare and initialize int variable to hold the task id to be returned. Default value is -1
             int id =-1;
         //Declare and initialize variables to be used in the SQL statement (Values a got from task object parameter)
-        String description = ((Task)item).getDescription();
+        String description;
         int category;
         int priority;
         int isDone;
@@ -321,15 +320,15 @@ public class TasksDB extends SQLiteOpenHelper {
             Log.d("addCategory","Catgory to be added in the addItem method in TasksDB class.");
         }else if(item instanceof Grocery){
             //if item is a Grocery object, update the Task table where the id corresponds
+            description = ((Task)item).getDescription();
             table = "GROCERIES";
-            fields="Name = '"+((Grocery) item).getDescription()+
-                        "', TypeOfGrocery = "+((Grocery)item).getType().getId()+
-                        "', IsSelected = "+toInt(((Grocery)item).isSelected());
-            sql ="SELECT _id FROM GROCERIES WHERE DateCreated = "+ ((Grocery) item).getDateCreated();
+            fields=" '"+((Grocery) item).getDescription()+
+                        "', "+((Grocery)item).getType().getId()+
+                        ", "+toInt(((Grocery)item).isSelected());
+            sql+=" "+table;
             Log.d("addGrocery","Grocery to be added in the addItem method in TasksDB class.");
         }else if(item instanceof Task){
-            table ="TASK (Description,Category,Priority,IsDone,IsAppointment,DueDate,IsArchived," +
-                    "IsSelected,Notes,DateCreated,DateClosed) ";
+            table ="TASK";
             description = ((Task)item).getDescription();
             category = ((Task)item).getCategory().getId();
             priority = ((Task)item).getPriority().increaseOrdinal();
@@ -364,36 +363,44 @@ public class TasksDB extends SQLiteOpenHelper {
     }//End of addTask method
 
     //Method to delete a task within the database
-    public void deleteItem(int id, Object item) {
+    public boolean deleteItem(Object item) {
         Log.d("Ent_deleteItem","Enter deleteItem method in TasksDB class.");
+        boolean result = false;
+        int id=-1;
         //Declare and instantiate a new database object to handle the database operations
         SQLiteDatabase db = getWritableDatabase();
         //Declare and initialize a query string
-        String sql1 = "DELETE FROM ";
-        String sql2 ="WHERE _id = ";
+        String deleteFrom = "DELETE FROM ";
+        String whereID =" WHERE _id = ";
         String table="";
         if(item instanceof GroceryType){
             table = "GROCERY_TYPE";
             //Delete all items from GROCERIES table where type id is equal to id
-            db.execSQL(sql1+"GOCERIES WHERE TypeOfGroceries = "+ id);
+           // db.execSQL(deleteFrom+"GOCERIES WHERE TypeOfGroceries = "+ ((GroceryType) item).getId());
+            id= ((GroceryType) item).getId();
             Log.d("deleteGROCERY_TYPE","GROCERY_TYPE to be deleted.");
         }else if(item instanceof Category){
             table ="CATEGORY";
             //Delete all items from TASK table where Category ID = id
-            db.execSQL(sql1+"TASK WHERE Category = "+ id);
+           // db.execSQL(deleteFrom+"TASK WHERE Category = "+ ((Category) item).getId());
+            id = ((Category) item).getId();
             Log.d("deleteCATEGORY","CATEGORY to be deleted.");
         }else if(item instanceof Grocery){
             table = "GROCERIES";
+            id = ((Grocery) item).getId();
             Log.d("deleteGROCERY","GROCERY to be deleted.");
         }else if(item instanceof Task){
             table = "TASK";
+            id = ((Task) item).getId();
             Log.d("deleteTASK","TASK to be deleted.");
         }//End of if else statements
 
         //Run SQL statement to delete the task with id x from the TASK table
-        db.execSQL(sql1+ table +sql2+ id);
+        db.execSQL(deleteFrom+ table +whereID+ id);
         db.close();
+        result = true;
         Log.d("Ext_deleteItem","Exit deleteItem method in TasksDB class.");
+        return result;
     }//End of deleteTask method
 
     //Method to update an existing Task
@@ -531,7 +538,7 @@ public class TasksDB extends SQLiteOpenHelper {
         id = c.getInt(0);
         description = c.getString(1);
         category = this.findCategoryById(c.getInt(2));
-        priority = Priority.findPriorityById(c.getInt(3));
+        priority = Priority.findPriorityById(c.getInt(3)-1);//Decrease the returned value by one as ordinal starts at 0 while DB start counting at 1
         isDone = toBoolean(c.getInt(4));
         isAppointment = toBoolean(c.getInt(5));
         dueDate = c.getInt(6);

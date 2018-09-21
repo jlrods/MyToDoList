@@ -3,62 +3,65 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="?android:attr/listPreferredItemHeight"
-    android:layout_margin="20sp">
+    android:layout_margin="20sp"
+    android:layout_marginBottom="40sp">
 
-    <CheckBox
-        android:id="@+id/cbTask"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_centerVertical="true"
-        android:layout_alignParentStart="true" />
+        <CheckBox
+            android:id="@+id/cbTask"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_centerVertical="true"
+            android:layout_alignParentStart="true" />
 
-    <TextView
-        android:id="@+id/tvDescription"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Task description "
-        android:layout_toRightOf="@id/cbTask"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:maxLines="1" />
+        <TextView
+            android:id="@+id/tvCategory"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Home"
+            android:layout_toRightOf="@id/cbTask"
+            android:layout_alignParentTop="true"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:maxLines="1" />
 
-    <TextView
-        android:id="@+id/tvDate"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Created: XX/XX/XXXX"
-        android:layout_alignParentBottom="true"
-        android:layout_toLeftOf="@id/imgOptions"
-        android:textAppearance="?android:attr/textAppearanceSmall"
-        android:maxLines="1" />
+        <TextView
+            android:id="@+id/tvDescription"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/tvCategory"
+            android:layout_toRightOf="@id/cbTask"
+            android:layout_toLeftOf="@+id/imgOptions"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:text="Task description "
+            android:textAppearance="?android:attr/textAppearanceMedium" />
 
-    <TextView
-        android:id="@+id/tvPriority"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Urgent"
-        android:layout_alignParentTop="true"
-        android:layout_toLeftOf="@id/imgOptions"
-        android:textAppearance="?android:attr/textAppearanceSmall"
-        android:maxLines="1" />
+        <TextView
+            android:id="@+id/tvDate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Created: XX/XX/XXXX"
+            android:layout_alignParentTop="true"
+            android:layout_toLeftOf="@id/imgOptions"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:maxLines="1" />
 
-    <TextView
-        android:id="@+id/tvCategory"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Home"
+        <TextView
+            android:id="@+id/tvPriority"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Urgent"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentRight="true"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:maxLines="1" />
 
-        android:layout_toRightOf="@id/cbTask"
-        android:layout_alignParentBottom="true"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:maxLines="1" />
-
-    <ImageView
-        android:id="@+id/imgOptions"
-        android:layout_width="?android:attr/listPreferredItemHeight"
-        android:layout_height="?android:attr/listPreferredItemHeight"
-        android:layout_alignParentRight="true"
-        android:src="@drawable/task_edit"
-        android:padding="15sp"/>
+        <ImageView
+            android:id="@+id/imgOptions"
+            android:layout_width="?android:attr/listPreferredItemHeight"
+            android:layout_height="?android:attr/listPreferredItemHeight"
+            android:layout_alignParentRight="true"
+            android:padding="15sp"
+            android:src="@drawable/task_edit" />
 
 </RelativeLayout>
