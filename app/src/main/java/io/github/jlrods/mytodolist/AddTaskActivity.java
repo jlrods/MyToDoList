@@ -231,19 +231,22 @@ public class AddTaskActivity extends AppCompatActivity implements DatePickerDial
                         GroceryType type = MainActivity.findGroceryTypeByName(typeName);
                         //Declare and instantiate a new cursor object to hold data from sql query to retrieve the max value from _id column in GROCERIES table
                         Cursor tempCursor = MainActivity.db.runQuery("SELECT MAX(_id) FROM GROCERIES");
-                        //Move temp cursor to first position
                         //Check the cursor is not empty
                         if(tempCursor != null && tempCursor.getCount() >0){
+                            //Move temp cursor to first position
                             tempCursor.moveToFirst();
                         }//End of if statement
-                        //Declare and instantiate int var to hold id retrived from DB and increment it by 1
-                        int id = tempCursor.getInt(0)+1;
+                        //Declare and instantiate int var to hold first guess of id number by retrieving the max grocery id from DB and increment it by 1. Only used to create a grocery object
+                        int tempId = tempCursor.getInt(0)+1;
                         //Declare and instantiate a new GroceryType object to hold all the grocery info
-                        Grocery grocery = new Grocery(id,groceryName,MainActivity.findCategoryByName(MainActivity.getGroceryCategory()),type,false);
-                        //Declare and instantiate a new int var to hold the returned int from the addItem method which will correspond with the grocery just created
-                        int idFromDB = MainActivity.db.addItem(grocery);
-                        //Check the id is correct by comparing the one used to create the Grocery object and the id coming from the DB after the insert item transaction.
-                        if(id == idFromDB){
+                        Grocery grocery = new Grocery(tempId,groceryName,MainActivity.findCategoryByName(MainActivity.getGroceryCategory()),type,false);
+                        //Declare and instantiate to invalid value a new int var to hold the returned int from the addItem method which will correspond with the grocery just created
+                        int idFromDB = -1;
+                        //Call the addItem method and receive the id sent from method
+                        idFromDB    = MainActivity.db.addItem(grocery);
+                        //Check the id from the DB is valid and different than the dummy one.
+                        if(idFromDB != -1){
+                            //If not the invalid value, assume the addItem method was successful
                             //Check if there is any filter activated to call the proper sql...
                             //Notify data set change
                             MainActivity.updateRecyclerViewData("SELECT * FROM GROCERIES ORDER BY TypeOfGrocery ASC");
@@ -290,14 +293,16 @@ public class AddTaskActivity extends AppCompatActivity implements DatePickerDial
                             //Move temp cursor to first position
                             tempCursor.moveToFirst();
                         }//End of if statement
-                        //Declare and instantiate int var to hold id retrived from DB and increment it by 1
-                        int id = tempCursor.getInt(0)+1;
+                        //Declare and instantiate  int var to hold first guess of id by retrieving max id from Task table and increment it by 1
+                        int tempId = tempCursor.getInt(0)+1;
                         //Declare and instantiate a new GroceryType object to hold all the grocery info
-                        Task newTask = new Task(id,taskDescription,MainActivity.findCategoryByName(categoryName),priority,false,this.cbIsAppointment.isChecked(),dueDate,false,notes);
+                        Task newTask = new Task(tempId,taskDescription,MainActivity.findCategoryByName(categoryName),priority,false,this.cbIsAppointment.isChecked(),dueDate,false,notes);
                         //Declare and instantiate a new int var to hold the returned int from the addItem method which will correspond with the grocery just created
-                        int idFromDB = MainActivity.db.addItem(newTask);
+                        int idFromDB = -1;
+                        //Call the addItem method and receive the id sent from method
+                        idFromDB = MainActivity.db.addItem(newTask);
                         //Check the id is correct by comparing the one used to create the Grocery object and the id coming from the DB after the insert item transaction.
-                        if(id == idFromDB){
+                        if(idFromDB!=-1){
                             //Check if there is any filter activated to call the proper sql...
                             //Notify data set change
                             MainActivity.updateRecyclerViewData("SELECT * FROM TASK ORDER BY Category ASC");

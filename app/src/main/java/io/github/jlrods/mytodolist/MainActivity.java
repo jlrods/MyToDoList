@@ -65,6 +65,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private static final String groceryCategory = "Groceries";
     private static final String allCategory ="All";
     private static String dateFormat ="MMM dd yyyy";
+    private boolean isSearchFilter = false;
+    private String[] lastSearchText ={"",""};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -121,17 +123,28 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 if(task.isSelected()!=isChecked){
                     //Update the isSelected list within the adapter used to track the actua isSelected status of each task
                     taskAdapter.updateItemIsSelected(adapterPosition,isChecked);
-                    //Declare and initiallize a string to hold the sql query to update the cursor
+                    //Declare and initialize a string to hold the sql query to update the cursor
                     String sql="";
                     //Update the data set (cursor object) with most up to date data from database
-                    //Check if any filter has been selected
-                    if(cbOnlyChecked.isChecked()){
-                        //If the global ccheck box is checked, filter the selected items only
-                        sql = "SELECT * FROM TASK WHERE IsSelected = 1 ORDER BY Category ASC";
+                    if(isSearchFilter){
+                        //Check if any filter has been selected
+                        if(cbOnlyChecked.isChecked()){
+                            //If the global check box is checked, filter the selected items only
+                            sql = lastSearchText[0] + " AND IsSelected = 1 ORDER BY Category ASC";
+                        }else{
+                            //otherwise, retrieve everything from Task table
+                            sql =lastSearchText[0] + " ORDER BY Category ASC";
+                        }//End of if else statement
                     }else{
-                        //otherwise, retrieve everything from Task table
-                        sql ="SELECT * FROM TASK ORDER BY Category ASC";
-                    }//End of if else statement
+                        //Check if any filter has been selected
+                        if(cbOnlyChecked.isChecked()){
+                            //If the global check box is checked, filter the selected items only
+                            sql = "SELECT * FROM TASK WHERE IsSelected = 1 ORDER BY Category ASC";
+                        }else{
+                            //otherwise, retrieve everything from Task table
+                            sql ="SELECT * FROM TASK ORDER BY Category ASC";
+                        }//End of if else statement
+                    }//End of if statement to check the isSearchFilter attribute state
                     //Update the isSelected attribute (un)checked task
                     db.updateIsSelected(currentCategory.getName().toString(),task.getId(),isChecked);
                     //Call method to update the adapter and the recyclerView
@@ -358,16 +371,27 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     if(task.isSelected()!=isChecked){
                         //Update the isSelected list within the adapter used to track the actual isSelected status of each task
                         taskAdapter.updateItemIsSelected(adapterPosition,isChecked);
-                        //Declare and initiallize a string to hold the sql query to update the cursor
+                        //Declare and initialize a string to hold the sql query to update the cursor
                         String sql="";
-                        //Check if any filter has been selected
-                        if(cbOnlyChecked.isChecked()){
-                            //If the global ccheck box is checked, filter the selected items only
-                            sql = "SELECT * FROM TASK WHERE IsSelected = 1 ORDER BY Category ASC";
+                        if(isSearchFilter){
+                            //Check if any filter has been selected
+                            if(cbOnlyChecked.isChecked()){
+                                //If the global check box is checked, filter the selected items only
+                                sql = lastSearchText[0] + " AND IsSelected = 1 ORDER BY Category ASC";
+                            }else{
+                                //otherwise, retrieve everything from Task table
+                                sql =lastSearchText[0] + " ORDER BY Category ASC";
+                            }//End of if else statement
                         }else{
-                            //otherwise, retrieve everything from Task table
-                            sql ="SELECT * FROM TASK ORDER BY Category ASC";
-                        }//End of if else statement
+                            //Check if any filter has been selected
+                            if(cbOnlyChecked.isChecked()){
+                                //If the global ccheck box is checked, filter the selected items only
+                                sql = "SELECT * FROM TASK WHERE IsSelected = 1 ORDER BY Category ASC";
+                            }else{
+                                //otherwise, retrieve everything from Task table
+                                sql ="SELECT * FROM TASK ORDER BY Category ASC";
+                            }//End of if else statement
+                        }
                         //Update database with the isSelected attribute of current task which checkbox was toggled
                         db.updateIsSelected(currentCategory.getName().toString(),task.getId(),isChecked);
                         //Call method to update the adapter and the recyclerView
@@ -417,20 +441,30 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     if(grocery.isSelected()!=isChecked){
                         //Update the isSelected list within the grocery adapter used to track the actual isSelected status of each task
                         groceryAdapter.updateItemIsSelected(adapterPosition,isChecked);
-                        //Declare and initiallize a string to hold the sql query to update the cursor
+                        //Declare and initialize a string to hold the sql query to update the cursor
                         String sql="";
-                        //Update the data set (cursor object) with most up to date data from database
-                        //Check if any filter has been selected
-                        if(cbOnlyChecked.isChecked()){
-                            //If the global check box is checked, filter the selected items only
-                            sql = "SELECT * FROM GROCERIES WHERE IsSelected = 1 ORDER BY TypeOfGrocery ASC";
-                        }else if(selectedTypes.size()>0){
-                            //Check if grocery type filter is in place (selectedTypes list is not empty)
-                            sql = listGroceriesFiltered();
+                        if(isSearchFilter){
+                            //Check if any filter has been selected
+                            if(cbOnlyChecked.isChecked()){
+                                //If the global check box is checked, filter the selected items only
+                                sql = lastSearchText[1] + " AND IsSelected = 1 ORDER BY TypeOfGrocery ASC";
+                            }else{
+                                //otherwise, retrieve everything from Task table
+                                sql =lastSearchText[1] + " ORDER BY TypeOfGrocery ASC";
+                            }//End of if else statement
                         }else{
-                            //otherwise, retrieve everything from groceries table
-                            sql ="SELECT * FROM GROCERIES ORDER BY TypeOfGrocery ASC";
-                        }
+                            //Check if any filter has been selected
+                            if(cbOnlyChecked.isChecked()){
+                                //If the global check box is checked, filter the selected items only
+                                sql = "SELECT * FROM GROCERIES WHERE IsSelected = 1 ORDER BY TypeOfGrocery ASC";
+                            }else if(selectedTypes.size()>0){
+                                //Check if grocery type filter is in place (selectedTypes list is not empty)
+                                sql = listGroceriesFiltered();
+                            }else{
+                                //otherwise, retrieve everything from groceries table
+                                sql ="SELECT * FROM GROCERIES ORDER BY TypeOfGrocery ASC";
+                            }//End of if else statements to check if the only checked filter has been applied
+                        }//End of if else statement to check the isSearchFilter is true or false
                         //Update database with the isSelected attribute of current grocery which checkbox was toggled
                         db.updateIsSelected(currentCategory.getName().toString(),grocery.getId(),isChecked);
                         //Call method to update the adapter and the recyclerView
@@ -481,10 +515,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         Log.d("Ent_serach","Enter the search method in the MainActivity class");
         //Declare and instantiate a new EditText object
         final EditText input= new EditText(this);
-        ////Set text to empty text
+        //Set text to empty text
         input.setText("");
         //Check the current category object... Depending on if it is Groceries or any other the actions will change
-        if (currentCategory.equals(this.findCategoryByName("Groceries"))){
+        if (currentCategory.equals(this.findCategoryByName(this.groceryCategory))){
             //In case the current category is Groceries
             //Clear selection of grocery type filters
             this.clearTypeFilter();
@@ -497,10 +531,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     .setView(input)
                     .setPositiveButton("Ok",new DialogInterface.OnClickListener(){
                         public void onClick(DialogInterface dialog,int whichButton){
+                            //Set isSearchFilter boolean to true
+                            isSearchFilter = true;
                             //Declare and instantiate as null a string object to hold the sql query to run. Depending on the current category, different query will be run
                             String sql="SELECT * FROM GROCERIES WHERE Name LIKE '%";
+                            //Store the search sql for future use
+                            lastSearchText[1] = sql+input.getText().toString()+"%'";
                             //Call method to update the adapter and the recyclerView
-                            updateRecyclerViewData(sql+input.getText().toString()+"%'");
+                            updateRecyclerViewData(lastSearchText[1]);
                         }//End of Onclick method
                     })//End of setPossitiveButton method
                     .setNegativeButton(R.string.cancel,null)
@@ -526,6 +564,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                                 //Otherwise, define sql query to retrieve tasks with the search text and the current category
                                 sql = "SELECT * FROM TASK WHERE Category = " + currentCategory.getId() + " AND description LIKE '%"+input.getText().toString()+"%'";
                             }//End of if else statement to  check the current category object
+                            //Set isSearchFilter boolean to true
+                            isSearchFilter = true;
+                            //Store the search sql for future use
+                            lastSearchText[0] = sql;
                             //Call method to update the adapter and the recyclerView
                             updateRecyclerViewData(sql);
                         }//End of Onclick method
@@ -543,6 +585,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     //Method to filter only the items that has been selected
     public void filterCheckedOnly(){
         Log.d("Ent_filterCheckedOnly","Enter the filterCheckedOnlyt method in the MainActivity class");
+        //If the search filter was applied set boolean flag to false
+        if(this.isSearchFilter){
+            this.isSearchFilter = false;
+        }//End of if statement to check the isSearchFilter attribute state
         //Check the current category object... Depending on if it is Groceries or any other the actions will change
         String sql ="";
         if (currentCategory.equals(this.findCategoryByName("Groceries"))){
