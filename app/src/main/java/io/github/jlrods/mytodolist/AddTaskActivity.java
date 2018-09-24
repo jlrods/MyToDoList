@@ -307,12 +307,12 @@ public class AddTaskActivity extends AppCompatActivity implements DatePickerDial
                             //Notify data set change
                             MainActivity.updateRecyclerViewData("SELECT * FROM TASK ORDER BY Category ASC");
                             //Display  message saying the grocery was added to the list
-                            Toast.makeText(this,R.string.groceryAdded,Toast.LENGTH_SHORT).show();
+                            Toast.makeText(this,R.string.taskAdded,Toast.LENGTH_SHORT).show();
                             result = true;
                             finish();
                         }else{
                             //Display a message in case the ids do not match
-                            Toast.makeText(this,R.string.groceryAddedFailed,Toast.LENGTH_SHORT).show();
+                            Toast.makeText(this,R.string.taskAddedFailed,Toast.LENGTH_SHORT).show();
                             result = false;
                         }//End of if esle statement to check the ids
                         result = true;
