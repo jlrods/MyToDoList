@@ -13,6 +13,7 @@ import android.widget.CompoundButton;
 import android.widget.TextView;
 
 import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -35,7 +36,7 @@ public class TaskAdapter extends
     protected CheckBox.OnCheckedChangeListener onCheckedChangeListener;
     // sparse boolean array for checking the state of the items
     protected static SparseBooleanArray itemStateArray= new SparseBooleanArray();
-
+    protected View.OnClickListener onClickListener;
     public TaskAdapter(Context context,TasksDB tasks ,Cursor cursor){
         Log.d("Ent_TaskAdapterConst","Enter the TaskAdapter constructor in the TaskAdapter class.");
         //Make object attributes to match values from parameters
@@ -78,6 +79,7 @@ public class TaskAdapter extends
         Log.d("Ent_TaskVHOnCreate","Enter the onCreateViewHolder method in the TaskAdapter class.");
         //Inflate the task element layout within the RecycleViewer
         View view = inf.inflate(R.layout.task_element,null);
+        view.setOnClickListener(onClickListener);
         Log.d("Ext_TaskVHOnCreate","Exit the onCreateViewHolder method in the TaskAdapter class.");
         return new ViewHolder(view);
     }//End of onCreateViewHolder method
@@ -100,8 +102,10 @@ public class TaskAdapter extends
         Task task = tasks.extractTask(cursor);
         //Set the view holder text for the task description, date, category and priority
         h.description.setText(task.getDescription());
-        h.date.setText(DateFormat.getDateInstance().format(
-                new Date(task.getDateCreated())));
+        //Declare and isntantiate a new DateFormat object to display date in current format (This format may change based on the app settings)
+        SimpleDateFormat format = new SimpleDateFormat(MainActivity.getDateFormat());
+        Date date = new Date(task.getDateCreated());
+        h.date.setText(format.format(date));
         h.category.setText(task.getCategory().toString());
         h.priority.setText(task.getPriority().toString());
         //Check the isSelected attribute of the task and then check the checkbox if required otherwise, set to not checked
@@ -127,4 +131,9 @@ public class TaskAdapter extends
         //Add or overwrite the checkbox list
         itemStateArray.put(position,isSelected);
     }//End of updateItemIsSelected method
+
+    public void setOnItemClickListener(View.OnClickListener onClickListener) {
+        this.onClickListener = onClickListener;
+    }
+
 }//End of TaskAdapter class

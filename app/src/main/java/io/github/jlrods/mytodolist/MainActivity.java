@@ -107,6 +107,20 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         //RecycleView settings
         this.recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
         this.taskAdapter = new TaskAdapter(this,db,cursor);
+        this.taskAdapter.setOnItemClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                int adapterPosition = recyclerView.getChildAdapterPosition(v);
+                //move the cursor to the task position in the adapter
+                cursor.moveToPosition(adapterPosition);
+                //Extract the task object from the cursor row
+                Task task = db.extractTask(cursor);
+                Intent i = new Intent(MainActivity.this, EditTaskActivity.class);
+                i.putExtra("id", task.getId());
+                i.putExtra("category",currentCategory.toString());
+                startActivity(i);
+            }//End of onClick method
+        });//End of OnSetItemClickListener method
         this.recyclerView.setAdapter(taskAdapter);
         this.layoutManager = new LinearLayoutManager(this);
         this.recyclerView.setLayoutManager(layoutManager);
@@ -441,6 +455,20 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             groceryAdapter = new GroceryAdapter(this,db,cursor);
             //Set the adapter in the global recyclerView
             recyclerView.setAdapter(groceryAdapter);
+            groceryAdapter.setOnItemClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    int adapterPosition = recyclerView.getChildAdapterPosition(v);
+                    //move the cursor to the task position in the adapter
+                    cursor.moveToPosition(adapterPosition);
+                    //Extract the task object from the cursor row
+                    Grocery grocery = db.extractGrocery(cursor);
+                    Intent i = new Intent(MainActivity.this, EditTaskActivity.class);
+                    i.putExtra("id", grocery.getId());
+                    i.putExtra("category",currentCategory.toString());
+                    startActivity(i);
+                }//End of onClick method
+            });//End of OnSetItemClickListener method
             //Set the OncheckedChangedListener for the groceryAdapter
             groceryAdapter.setOnItemCheckedChangeListener(new CheckBox.OnCheckedChangeListener() {
                 @Override

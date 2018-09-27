@@ -45,4 +45,18 @@ public class SpinnerAdapter extends CursorAdapter {
         Log.d("Ent_bindView","Exit bindView method to populate spinners in SpinnerAdapter class.");
     }//End of bindView method
 
+    public int findItemPosition(String itemName){
+        boolean found = false;
+        int position=-1;
+        Cursor c = getCursor();
+        do{
+            if(c.getString(1).toLowerCase().equals(itemName.toLowerCase())){
+                found = true;
+                position = c.getPosition();
+            }
+        }while(c.moveToNext() && !found);
+
+        return position;
+    }
+
 }//End of SpinnerAdapter class

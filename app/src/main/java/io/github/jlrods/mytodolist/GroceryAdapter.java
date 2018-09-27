@@ -50,6 +50,7 @@ public class GroceryAdapter extends TaskAdapter{
         Log.d("Ent_GroceryVHOnCreate","Enter the onCreateViewHolder method in the GroceryAdapter class.");
         //Inflate the task element layout within the RecycleViewer
         View view = inf.inflate(R.layout.grocery_element,null);
+        view.setOnClickListener(onClickListener);
         Log.d("Ext_GroceryVHOnCreate","Exit the onCreateViewHolder method in the GroceryAdapter class.");
         return new ViewHolder(view);
     }//End of onCreateViewHolder method

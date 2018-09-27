@@ -20,8 +20,11 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".AddTaskActivity"
-            android:label="Add a task or grocery" />
+        android:name=".AddTaskActivity"
+        android:label="Add a task or grocery" />
+        <activity
+            android:name=".EditTaskActivity"
+            android:label="Edit a task or grocery" />
     </application>
 
 </manifest>
