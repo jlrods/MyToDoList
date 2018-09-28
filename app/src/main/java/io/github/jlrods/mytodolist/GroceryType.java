@@ -33,4 +33,6 @@ public class GroceryType extends Category{
     public void setInFilter(boolean inFilter) {
         isInFilter = inFilter;
     }
+
+
 }// End of GroceryType class

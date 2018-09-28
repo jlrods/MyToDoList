@@ -33,7 +33,7 @@
     <string name="spCategoryHint">Select the task category...</string>
     <string name="spGrocTypeHint">Select the grocer y type...</string>
     <string name="save">Save</string>
-    <string name="groceryAdded">The new grocery has been successfully added to your gorcery list</string>
+    <string name="groceryAdded">The new grocery has been successfully added to your grocery list</string>
     <string name="taskAdded">The new task has been successfully added to your task list</string>
     <string name="groceryAddedFailed">The new grocery was not included in the grocery list. Please, Try again.</string>
     <string name="taskAddedFailed">The new task was not included in the grocery list. Please, Try again.</string>

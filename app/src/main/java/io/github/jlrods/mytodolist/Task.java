@@ -74,11 +74,12 @@ public class Task {
 
     //Full constructor
     public Task(int id,String descripttion,Category category,Priority priority,boolean isDone,
-                boolean isAppointment, long dueDate,boolean isArchived,String notes,boolean isSelected,long dateClosed){
+                boolean isAppointment, long dueDate,boolean isArchived,String notes,boolean isSelected,long dateCreated,long dateClosed){
         //Call the 9 argument constructor and pass in the parameters
         this(id,descripttion,category,priority,isDone,isAppointment,dueDate,isArchived,notes);
         Log.d("EntFullTask","Enter full constructor in the Task class.");
         this.isSelected = isSelected;
+        this.dateCreated = dateCreated;
         this.dateClosed = dateClosed;
         Log.d("ExtFullTask","Exit full constructor in the Task class.");
     }//End of full constructor
