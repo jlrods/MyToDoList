@@ -293,73 +293,73 @@ public class TasksDB extends SQLiteOpenHelper {
             String sql = "SELECT MAX(_id) FROM ";
             //Declare and initialize int variable to hold the task id to be returned. Default value is -1
             int id =-1;
-        //Declare and initialize variables to be used in the SQL statement (Values a got from task object parameter)
-        String description;
-        int category;
-        int priority;
-        int isDone;
-        int isAppointment;
-        long dueDate;
-        int isArchived;
-        int isSelected;
-        String notes;
-        long dateCreated;
-        long dateClosed ;
-        //If else statements to check the class each object is from
-        if(item instanceof GroceryType){
-           //if item is a GroceryType object, update the Task table where the id corresponds
-           table= "GROCERY_TYPE";
-           fields="Name = '"+((GroceryType) item).getName()+"'";
-            sql+= table;
-            Log.d("addGroceryType","GroceryType to be added in the addItem method in TasksDB class.");
-        }else if(item instanceof Category){
-            //if item is a Category object, update the Task table where the id corresponds
-            table = "CATEGORY";
-            fields="Name ='"+ ((Category) item).getName()+"'";
-            sql+= table;
-            Log.d("addCategory","Catgory to be added in the addItem method in TasksDB class.");
-        }else if(item instanceof Grocery){
-            //if item is a Grocery object, update the Task table where the id corresponds
-            description = ((Task)item).getDescription();
-            table = "GROCERIES";
-            fields=" '"+((Grocery) item).getDescription()+
-                        "', "+((Grocery)item).getType().getId()+
-                        ", "+toInt(((Grocery)item).isSelected());
-            sql+=" "+table;
-            Log.d("addGrocery","Grocery to be added in the addItem method in TasksDB class.");
-        }else if(item instanceof Task){
-            table ="TASK";
-            description = ((Task)item).getDescription();
-            category = ((Task)item).getCategory().getId();
-            priority = ((Task)item).getPriority().increaseOrdinal();
-            isDone = toInt(((Task)item).isDone());
-            isAppointment = toInt(((Task)item).isAppointment());
-            dueDate = ((Task)item).getDueDate();
-            isArchived = toInt(((Task)item).isArchived());
-            isSelected = toInt(((Task)item).isSelected());
-            notes = ((Task)item).getNotes();
-            dateCreated = ((Task)item).getDateCreated();
-            dateClosed = ((Task)item).getDateClosed();
-            fields = "'"+description+"', "+ category+", "+priority+", "+isDone+", "+isAppointment+", "+
-                    dueDate+", "+isArchived+", "+isSelected+", '"+notes+"', "+dateCreated+", "+dateClosed;
-            sql ="SELECT _id FROM TASK WHERE DateCreated = "+ ((Task) item).getDateCreated();
-            Log.d("addTask","Task to be added in the addItem method in TasksDB class.");
-        }//End of if else statements
-        //Execure the sql command to update corresponding table
-        db.execSQL(insertInto+table+values+fields+closeBracket);
-        //Declare and isntantiate a cursor object to hold the id of task just added into the TASK table
-        Cursor c =db.rawQuery(sql,null);
-        //Check the cursor is not empty and move to next row
-        if (c.moveToNext()){
-            //Make the id equal to the _id field in the database
-            id = c.getInt(0);
-        }//End of if conditio
-        //Close both  database and cursor
-        c.close();
-        db.close();
-        Log.d("Ext_addTask","Exit addTask method in TasksDB class.");
-        //Return id of item just added into database
-        return id;
+            //Declare and initialize variables to be used in the SQL statement (Values a got from task object parameter)
+            String description;
+            int category;
+            int priority;
+            int isDone;
+            int isAppointment;
+            long dueDate;
+            int isArchived;
+            int isSelected;
+            String notes;
+            long dateCreated;
+            long dateClosed ;
+            //If else statements to check the class each object is from
+            if(item instanceof GroceryType){
+               //if item is a GroceryType object, update the Task table where the id corresponds
+               table= "GROCERY_TYPE";
+               fields="Name = '"+((GroceryType) item).getName()+"'";
+                sql+= table;
+                Log.d("addGroceryType","GroceryType to be added in the addItem method in TasksDB class.");
+            }else if(item instanceof Category){
+                //if item is a Category object, update the Task table where the id corresponds
+                table = "CATEGORY";
+                fields="Name ='"+ ((Category) item).getName()+"'";
+                sql+= table;
+                Log.d("addCategory","Catgory to be added in the addItem method in TasksDB class.");
+            }else if(item instanceof Grocery){
+                //if item is a Grocery object, update the Task table where the id corresponds
+                description = ((Task)item).getDescription();
+                table = "GROCERIES";
+                fields=" '"+((Grocery) item).getDescription()+
+                            "', "+((Grocery)item).getType().getId()+
+                            ", "+toInt(((Grocery)item).isSelected());
+                sql+=" "+table;
+                Log.d("addGrocery","Grocery to be added in the addItem method in TasksDB class.");
+            }else if(item instanceof Task){
+                table ="TASK";
+                description = ((Task)item).getDescription();
+                category = ((Task)item).getCategory().getId();
+                priority = ((Task)item).getPriority().increaseOrdinal();
+                isDone = toInt(((Task)item).isDone());
+                isAppointment = toInt(((Task)item).isAppointment());
+                dueDate = ((Task)item).getDueDate();
+                isArchived = toInt(((Task)item).isArchived());
+                isSelected = toInt(((Task)item).isSelected());
+                notes = ((Task)item).getNotes();
+                dateCreated = ((Task)item).getDateCreated();
+                dateClosed = ((Task)item).getDateClosed();
+                fields = "'"+description+"', "+ category+", "+priority+", "+isDone+", "+isAppointment+", "+
+                        dueDate+", "+isArchived+", "+isSelected+", '"+notes+"', "+dateCreated+", "+dateClosed;
+                sql ="SELECT _id FROM TASK WHERE DateCreated = "+ ((Task) item).getDateCreated();
+                Log.d("addTask","Task to be added in the addItem method in TasksDB class.");
+            }//End of if else statements
+            //Execute the sql command to update corresponding table
+            db.execSQL(insertInto+table+values+fields+closeBracket);
+            //Declare and isntantiate a cursor object to hold the id of task just added into the TASK table
+            Cursor c =db.rawQuery(sql,null);
+            //Check the cursor is not empty and move to next row
+            if (c.moveToNext()){
+                //Make the id equal to the _id field in the database
+                id = c.getInt(0);
+            }//End of if condition
+            //Close both  database and cursor
+            c.close();
+            db.close();
+            Log.d("Ext_addTask","Exit addTask method in TasksDB class.");
+            //Return id of item just added into database
+            return id;
     }//End of addTask method
 
     //Method to delete a task within the database
