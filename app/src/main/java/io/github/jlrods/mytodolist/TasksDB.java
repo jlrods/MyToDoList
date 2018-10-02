@@ -470,7 +470,7 @@ public class TasksDB extends SQLiteOpenHelper {
     }//End of toInt
 
     //Method to internally convert an int into a boolean true or false. Any value different from 0 will be true
-    private boolean toBoolean (int valueToConvert){
+    public boolean toBoolean (int valueToConvert){
         Log.d("Ent_toBool","Enter toBoolean method in the TaskDB class.");
         boolean bool;
         if(valueToConvert==0){
@@ -809,24 +809,42 @@ public class TasksDB extends SQLiteOpenHelper {
     }//End of findCategoryById method
 
     //Method to Update the isSelected attribure of a Task or Grocery
-    public boolean updateIsSelected(String table, int id,boolean isSelected){
+    public boolean updateBoolAttribute(String table,String atrtibute ,int id,boolean boolValue){
         //Declare and instantiate a new database object to handle the database operations
         SQLiteDatabase bd = getWritableDatabase();
         //Declare and initialize a query string variables
         boolean success=false;
         String update = "UPDATE ";
-        String set =" SET IsSelected = ";
+        String set =" SET";
         String where = " WHERE _id = ";
-        if(table.equals("Groceries")){
+        if(table.equals(MainActivity.getGroceryCategory())){
             table= table.toUpperCase();
+            set += " IsSelected ";
         }else{
             table = "TASK";
-        }
-        String sql = update+table+set+toInt(isSelected)+where+id;
+            switch(atrtibute){
+                case "IsSelected":
+                    set += " IsSelected = ";
+                    break;
+                case "IsDone":
+                    set += " IsDone = ";
+                    break;
+                case "IsAppointment":
+                    set += " IsAppointment = ";
+                    break;
+                case "IsArchived":
+                    set += " IsArchive =  ";
+                    break;
+                default:
+                    set += " IsSelected = ";
+                    break;
+            }//End of switch statemt
+        }//End of if else statement to check the current category
+        String sql = update+table+set+toInt(boolValue)+where+id;
         //Execure the sql command to update corresponding table
         bd.execSQL(sql);
         return success;
-    }//End of updateIsSelected method
+    }//End of updateBoolAttribute method
 
     //Method to update the isInFilter attribute of the Grocery Type table
     public boolean updateIsInFilter(int id, boolean isInFilter){

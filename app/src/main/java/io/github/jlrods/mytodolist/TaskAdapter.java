@@ -2,7 +2,10 @@ package io.github.jlrods.mytodolist;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.support.v7.widget.RecyclerView;
+import android.text.Html;
 import android.util.Log;
 import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
@@ -93,7 +96,7 @@ public class TaskAdapter extends
     @Override
     public int getItemCount() {return cursor.getCount(); }
 
-    //Method to cutomize each viewholder with each task data
+    //Method to customize each viewholder with each task data
     public void customizeViewHolder(ViewHolder h,int position){
         Log.d("Ent_customozeTaksVH","Enter the curotmizeViewHolder method in the TaskAdapter class.");
         //Move current cursor to positon passed in as parameter
@@ -102,7 +105,7 @@ public class TaskAdapter extends
         Task task = tasks.extractTask(cursor);
         //Set the view holder text for the task description, date, category and priority
         h.description.setText(task.getDescription());
-        //Declare and isntantiate a new DateFormat object to display date in current format (This format may change based on the app settings)
+        //Declare and instantiate a new DateFormat object to display date in current format (This format may change based on the app settings)
         SimpleDateFormat format = new SimpleDateFormat(MainActivity.getDateFormat());
         Date date = new Date(task.getDateCreated());
         h.date.setText(format.format(date));
@@ -118,6 +121,19 @@ public class TaskAdapter extends
         itemStateArray.put(position,task.isSelected());
         //Set the onCheckedChangeListener to the current viewholder's checkbox
         h.checkBox.setOnCheckedChangeListener(this.onCheckedChangeListener);
+        //Check if task is done so it can be highlighted
+        if(task.isDone()){
+            h.description.setText(Html.fromHtml("<font color='"+MainActivity.getDoneColor()+"'>"+ h.description.getText()+"</font>"));
+            //h.description.setHighlightColor(MainActivity.getHighlightColor());
+            //h.description.setPaintFlags(h.description.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+            h.description.setBackgroundColor(Color.parseColor(MainActivity.getDoneHighlighter()));
+            //h.description.setTextColor(MainActivity.getHighlightColor());
+        }else{
+            //h.description.setText(h.description.getText()+"</font>"));
+            //h.description.setPaintFlags(h.description.getPaintFlags() & (~ Paint.STRIKE_THRU_TEXT_FLAG));
+            //h.description.setTextColor(MainActivity.getPrimaryTextColor());
+            h.description.setBackgroundColor(Color.parseColor(MainActivity.getWhiteBackground()));
+        }
         Log.d("Ext_customozeTaksVH","Exit the curotmizeViewHolder method in the TaskAdapter class.");
     }//End of customizeViewHolder method
 
