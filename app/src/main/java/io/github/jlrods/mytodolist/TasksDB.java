@@ -315,7 +315,7 @@ public class TasksDB extends SQLiteOpenHelper {
             }else if(item instanceof Category){
                 //if item is a Category object, update the Task table where the id corresponds
                 table = "CATEGORY";
-                fields="Name ='"+ ((Category) item).getName()+"'";
+                fields="'"+((Category) item).getName()+"'";
                 sql+= table;
                 Log.d("addCategory","Catgory to be added in the addItem method in TasksDB class.");
             }else if(item instanceof Grocery){
@@ -346,7 +346,8 @@ public class TasksDB extends SQLiteOpenHelper {
                 Log.d("addTask","Task to be added in the addItem method in TasksDB class.");
             }//End of if else statements
             //Execute the sql command to update corresponding table
-            db.execSQL(insertInto+table+values+fields+closeBracket);
+            String insertSql = insertInto+table+values+fields+closeBracket;
+            db.execSQL(insertSql);
             //Declare and isntantiate a cursor object to hold the id of task just added into the TASK table
             Cursor c =db.rawQuery(sql,null);
             //Check the cursor is not empty and move to next row
@@ -522,7 +523,7 @@ public class TasksDB extends SQLiteOpenHelper {
         return type;
     }//End of extractGroceryType method
 
-    //Method to extrac an unit form a cursor object
+    //Method to extract an unit form a cursor object
     public Task extractTask(Cursor c){
         Log.d("Ent_ExtractTask","Enter extractTask method in the TaskDB class.");
         //Declare null Task object to be returned by method
@@ -819,7 +820,7 @@ public class TasksDB extends SQLiteOpenHelper {
         String where = " WHERE _id = ";
         if(table.equals(MainActivity.getGroceryCategory())){
             table= table.toUpperCase();
-            set += " IsSelected ";
+            set += " IsSelected = ";
         }else{
             table = "TASK";
             switch(atrtibute){
