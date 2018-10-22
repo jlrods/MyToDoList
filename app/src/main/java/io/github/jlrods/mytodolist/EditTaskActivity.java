@@ -124,7 +124,8 @@ public class EditTaskActivity extends DisplayTaskActivity {
                                             && newGrocery.getType().toString().equals(oldGrocery.getType().toString())
                                             && newGrocery.isSelected() == oldGrocery.isSelected()) {
                                         //If they are the same notify data set change
-                                        result = this.updateDataList("SELECT * FROM GROCERIES ORDER BY TypeOfGrocery ASC");
+                                        result = this.updateDataList(this.extras.getString("sql"));
+                                        //result = this.updateDataList("SELECT * FROM GROCERIES ORDER BY TypeOfGrocery ASC");
                                     } else {
                                         //Display error message
                                         Toast.makeText(this, "Error: Failed to update the grocery", Toast.LENGTH_LONG).show();
@@ -136,7 +137,7 @@ public class EditTaskActivity extends DisplayTaskActivity {
                             Toast.makeText(this, "Error: Failed to update the grocery", Toast.LENGTH_LONG).show();
                         }
                 }else{
-                    //For all other tasks proceed as follows#
+                    //For all other tasks proceed as follows
                     //Get the task details from the UI
                     Task newTask = this.getItemFromUIData();
                     //Check the new task object is not null or empty.
@@ -183,7 +184,8 @@ public class EditTaskActivity extends DisplayTaskActivity {
                                         && newTask.getDueDate() == oldTask.getDueDate()
                                         && newTask.getNotes().equals(oldTask.getNotes())){
                                     //Notify data set change
-                                    result = this.updateDataList("SELECT * FROM TASK ORDER BY Category ASC");
+                                    result = this.updateDataList(this.extras.getString("sql"));
+                                    //result = this.updateDataList("SELECT * FROM TASK ORDER BY Category ASC");
                                 }//End of if statement that checks the DB update matches the data
                             }//End of if else statements that checks the task has changed in some way
                         }//End of if statement that checks the temp cursor is not empty

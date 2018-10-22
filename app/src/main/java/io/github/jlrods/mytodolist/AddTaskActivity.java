@@ -41,8 +41,9 @@ public class AddTaskActivity extends DisplayTaskActivity {
             case R.id.add_task_save:
                 //Check the current task category is Groceries
                 if(this.extras.getString("category").equals(MainActivity.getGroceryCategory())){
-
+                    //Create a new grocery based on data input by user
                     Grocery grocery = (Grocery) this.getItemFromUIData();
+                    //Check the grocery is not empty
                     if(grocery != null){
                         //Declare and instantiate to invalid value a new int var to hold the returned int from the addItem method which will correspond with the grocery just created
                         int idFromDB = -1;
@@ -50,8 +51,8 @@ public class AddTaskActivity extends DisplayTaskActivity {
                         idFromDB    = MainActivity.db.addItem(grocery);
                         //Check the id from the DB is valid and different than the dummy one.
                         if(idFromDB != -1){
-
-                            result = this.updateDataList("SELECT * FROM GROCERIES ORDER BY TypeOfGrocery ASC");
+                            //Call method to update data set displayed on the recycler view and display proper message after adding the grocery to the DB
+                            result = this.updateDataList(this.extras.getString("sql"));
                         }//End of if statement to check the idFromDB is not -1
                     }else{
                         //Display error message for failing add grocery in DB
@@ -66,8 +67,8 @@ public class AddTaskActivity extends DisplayTaskActivity {
                             idFromDB = MainActivity.db.addItem(newTask);
                             //Check the id is correct by comparing the one used to create the Grocery object and the id coming from the DB after the insert item transaction.
                             if(idFromDB!=-1){
-
-                                result = this.updateDataList("SELECT * FROM TASK ORDER BY Category ASC");
+                                //Call method to update data set displayed on the recycler view and display proper message after adding the task to the DB
+                                result = this.updateDataList(this.extras.getString("sql"));
                             }else{
                                 //Display a message in case the ids do not match
                                 Toast.makeText(this,R.string.taskAddedFailed,Toast.LENGTH_SHORT).show();

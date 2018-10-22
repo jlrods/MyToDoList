@@ -129,10 +129,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 cursor.moveToPosition(adapterPosition);
                 //Extract the task object from the cursor row
                 Task task = db.extractTask(cursor);
-                Intent i = new Intent(MainActivity.this, EditTaskActivity.class);
+                throwEditTaskActivity(task.getId());
+                /*Intent i = new Intent(MainActivity.this, EditTaskActivity.class);
                 i.putExtra("id", task.getId());
                 i.putExtra("category",currentCategory.toString());
-                startActivity(i);
+                startActivity(i);*/
             }//End of onClick method
         });//End of OnSetItemClickListener method
         this.recyclerView.setAdapter(taskAdapter);
@@ -247,7 +248,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }//End of onCreate Method
 
     //Method to return sql string to be used to update the REcyclerViewer object
-    private String getSQLForRecyclerView(){
+    public String getSQLForRecyclerView(){
         Log.d("Ent_getSQLRecView","Enter getSQLForRecyclerView method in MainActivity class.");
         //Declare and initialize a String to be returned by this method
         String sql="";
@@ -569,10 +570,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     cursor.moveToPosition(adapterPosition);
                     //Extract the task object from the cursor row
                     Grocery grocery = db.extractGrocery(cursor);
-                    Intent i = new Intent(MainActivity.this, EditTaskActivity.class);
+                    throwEditTaskActivity(grocery.getId());
+                    /*Intent i = new Intent(MainActivity.this, EditTaskActivity.class);
                     i.putExtra("id", grocery.getId());
                     i.putExtra("category",currentCategory.toString());
-                    startActivity(i);
+                    startActivity(i);*/
                 }//End of onClick method
             });//End of OnSetItemClickListener method
             //Set the OncheckedChangedListener for the groceryAdapter
@@ -1207,9 +1209,23 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         Intent i= new Intent(MainActivity.this,AddTaskActivity.class);
         //Add extras to the intent object, specifically the current category where the add button was pressed from
         i.putExtra("category",this.currentCategory.toString());
+        i.putExtra("sql",this.getSQLForRecyclerView());
         //Start the addTaskActivity class
         startActivity(i);
         Log.d("Ext_throwAddTask","Exit throwAddTaskActivity method in the MainActivity class.");
+    }//End of throwAddTaskActivity method
+
+    private void throwEditTaskActivity(int id){
+        Log.d("Ent_throwEditTask","Enter throwEditTaskActivity method in the MainActivity class.");
+        //Declare and instantiate a new intent object
+        Intent i= new Intent(MainActivity.this,EditTaskActivity.class);
+        //Add extras to the intent object, specifically the current category where the add button was pressed from
+        i.putExtra("category",this.currentCategory.toString());
+        i.putExtra("id",id);
+        i.putExtra("sql",this.getSQLForRecyclerView());
+        //Start the addTaskActivity class
+        startActivity(i);
+        Log.d("Ext_throwEditTask","Exit throwEditTaskActivity method in the MainActivity class.");
     }//End of throwAddTaskActivity method
 
     //Method to delete a task or a grocery
