@@ -43,4 +43,13 @@
     <string name="deleteGrocery">Are you sure you want to delete </string>
     <string name="deleteGrocery1"> selected grocery(ies)?</string>
     <string name="deleteTaskTitle">Delete Task</string>
+    <string name="addDelTaskList">Add or Delete a task list...</string>
+    <string name="addTaskList">Add a new task list</string>
+    <string name="delTaskList">Delete existing task list</string>
+    <string name="addTaskListExp">Please type the name of the new list:</string>
+    <string name="listNameEmpty">List name cannot be left blank.</string>
+    <string name="listNameDuplicate">The new List name is already in use.</string>
+    <string name="addListSuccess">The new task list has been added.</string>
+    <string name="addListFail">The new task list has not been added.</string>
+    <string name="deleteTaskList">Delete Task Lists.</string>
 </resources>

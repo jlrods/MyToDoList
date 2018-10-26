@@ -3,36 +3,36 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:showIn="navigation_view">
 
-    <group android:checkableBehavior="single">
+    <group
+        android:id="@+id/categoryListMenu"
+        android:checkableBehavior="single">
         <item
             android:id="@+id/nav_all"
-            android:icon="@android:drawable/ic_menu_camera"
-            android:title="All" />
+            android:icon="@drawable/all_icon"
+            android:title="@string/all"
+            android:orderInCategory="100"/>
         <item
             android:id="@+id/nav_grocery"
-            android:icon="@android:drawable/ic_menu_gallery"
-            android:title="Groceries" />
-        <item
-            android:id="@+id/nav_slideshow"
-            android:icon="@android:drawable/ic_menu_slideshow"
-            android:title="Slideshow" />
-        <item
-            android:id="@+id/nav_manage"
-            android:icon="@android:drawable/ic_menu_manage"
-            android:title="Tools" />
+            android:icon="@drawable/groceries_icon"
+            android:title="@string/groceries"
+            android:orderInCategory="150"/>
     </group>
 
-    <item android:title="Communicate">
-        <menu>
-            <item
-                android:id="@+id/nav_share"
-                android:icon="@android:drawable/ic_menu_share"
-                android:title="Share" />
-            <item
-                android:id="@+id/nav_send"
-                android:icon="@android:drawable/ic_menu_send"
-                android:title="Send" />
-        </menu>
-    </item>
-
+    <group
+        android:id="@+id/addTaskListMenu"
+        android:checkableBehavior="single"
+        android:orderInCategory="2000">
+        <item android:title="@string/addDelTaskList">
+            <menu>
+                <item
+                    android:id="@+id/nav_addList"
+                    android:icon="@android:drawable/ic_menu_add"
+                    android:title="@string/addTaskList" />
+                <item
+                    android:id="@+id/nav_deleteList"
+                    android:icon="@android:drawable/ic_menu_delete"
+                    android:title="@string/delTaskList" />
+            </menu>
+        </item>
+    </group>
 </menu>
