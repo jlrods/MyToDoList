@@ -24,6 +24,12 @@ public class TasksDB extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         Log.d("Ent_DBOncreate","Enter onCreate method in TasksDB class.");
+
+        //Create User table
+        db.execSQL("CREATE TABLE USER (_id INTEGER PRIMARY KEY AUTOINCREMENT,UserName TEXT, UserEmail TEXT, Photo TEXT);");
+        //Populate the user table with unique user
+        db.execSQL("INSERT INTO USER VALUES(null,'MyToDoList','example@gmail.com','')");
+
         //Create CATEGORY table
         db.execSQL("CREATE TABLE CATEGORY (_id INTEGER PRIMARY KEY AUTOINCREMENT,Name TEXT);");
         //Populate the CATEGORY table with different categories for the task lists
@@ -596,7 +602,7 @@ public class TasksDB extends SQLiteOpenHelper {
         return grocery;
     }//End of extractGrocery method
 
-    public Task extractGrocery(Cursor c,int id){
+   /* public Task extractGrocery(Cursor c,int id){
         //Declare null Task object to be returned by method
         Grocery grocery = null;
         boolean found = false;
@@ -610,7 +616,7 @@ public class TasksDB extends SQLiteOpenHelper {
             }
         }while(!found && i<c.getCount());
         return grocery;
-    }//End of extractTask method
+    }//End of extractTask method*/
 
 
     //Method to retrieve the list of categories stored on the database
@@ -766,7 +772,7 @@ public class TasksDB extends SQLiteOpenHelper {
 
     //Method to find a category by passing in id number
     public Category findCategoryById(int id){
-        Log.d("Ent_FindCatById","Enter the findCategoryById method in the MainActivity class.");
+        Log.d("Ent_FindCatById","Enter the findCategoryById method in the TaskDB class.");
         //Declare and instantiate a new cursor object to hold the list of categories by running a sql query
         Cursor categories = runQuery("SELECT * FROM CATEGORY");
         //Declare and instantiate a null Category object
@@ -783,13 +789,13 @@ public class TasksDB extends SQLiteOpenHelper {
                 found = true;
             }//End of if statement to check the current item name
         }//End of while loop to iterate
-        Log.d("Ent_FindCatById","Enter the findCategoryById method in the MainActivity class.");
+        Log.d("Ent_FindCatById","Enter the findCategoryById method in the TaskDB class.");
         return category;
     }//End of findCategoryById method
 
     //Method to find a category by passing in id number
     public GroceryType findGroceryTypeById(int id){
-        Log.d("Ent_FindCatById","Enter the findCategoryById method in the MainActivity class.");
+        Log.d("Ent_FindCatById","Enter the findCategoryById method in the TaskDB class.");
         //Declare and instantiate a new cursor object to hold the list of grocery types by running a sql query
         Cursor groceryTypes = runQuery("SELECT * FROM GROCERY_TYPE");
         //Declare and instantiate a null groceryType object
@@ -805,12 +811,13 @@ public class TasksDB extends SQLiteOpenHelper {
                 found = true;
             }//End of if statement to check the current item name
         }//End of while loop to iterate
-        Log.d("Ent_FindCatById","Enter the findCategoryById method in the MainActivity class.");
+        Log.d("Ent_FindCatById","Enter the findCategoryById method in the TaskDB class.");
         return type;
     }//End of findCategoryById method
 
     //Method to Update the isSelected attribure of a Task or Grocery
     public boolean updateBoolAttribute(String table,String atrtibute ,int id,boolean boolValue){
+        Log.d("Ent_UpdateBoolAttr","Enter the updateBoolAttribute method in the TaskDB class.");
         //Declare and instantiate a new database object to handle the database operations
         SQLiteDatabase bd = getWritableDatabase();
         //Declare and initialize a query string variables
@@ -818,11 +825,15 @@ public class TasksDB extends SQLiteOpenHelper {
         String update = "UPDATE ";
         String set =" SET";
         String where = " WHERE _id = ";
+        //Check the current category is the Groceries Category
         if(table.equals(MainActivity.getGroceryCategory())){
+            //If that is the case set the table name to GROCERIES and attribute to update the IsSelected (the only boolean attribute)
             table= table.toUpperCase();
             set += " IsSelected = ";
         }else{
+            //Otherwise, set table to be TASK and check the attribute passed in as a parameter
             table = "TASK";
+            //Check the attribute text and include it  into the sql statement
             switch(atrtibute){
                 case "IsSelected":
                     set += " IsSelected = ";
@@ -839,25 +850,64 @@ public class TasksDB extends SQLiteOpenHelper {
                 default:
                     set += " IsSelected = ";
                     break;
-            }//End of switch statemt
+            }//End of switch statement
         }//End of if else statement to check the current category
+        //Construct the complete sql query
         String sql = update+table+set+toInt(boolValue)+where+id;
-        //Execure the sql command to update corresponding table
-        bd.execSQL(sql);
+        //Try Catch block to execute the sql command to update corresponding table
+        try{
+            //Run the query and change success to true if no issues
+            bd.execSQL(sql);
+            success = true;
+        }catch (Exception e) {
+            //Log the exception message
+            Log.d("DataBaseException",e.toString());
+        }//End of try and catch block
+        Log.d("Ext_UpdateBoolAttr","Exit the updateBoolAttribute method in the TaskDB class.");
         return success;
     }//End of updateBoolAttribute method
 
     //Method to update the isInFilter attribute of the Grocery Type table
     public boolean updateIsInFilter(int id, boolean isInFilter){
+        Log.d("Ent_UpdateIsInFilter","Enter the updateIsInFiler method in the TaskDB class.");
         //Declare and instantiate a new database object to handle the database operations
         SQLiteDatabase bd = getWritableDatabase();
         //Declare and initialize a query string variables
         boolean success=false;
         String sql = "UPDATE GROCERY_TYPE SET IsInFilter = "+toInt(isInFilter)+" WHERE _id = "+id;
-        //Execure the sql command to update corresponding table
-        bd.execSQL(sql);
+        //Try Catch block to execute the sql command to update corresponding table
+        try{
+            //Run the query and change success to true if no issues
+            bd.execSQL(sql);
+            success = true;
+        }catch (Exception e) {
+            //Log the exception message
+            Log.d("DataBaseException",e.toString());
+        }//End of try catch block
+        Log.d("Ext_UpdateIsInFiler","Exit the updateIsInFiler method in the TaskDB class.");
         return success;
     }//End of updateIsInFilter method
+
+    public boolean updateUser(String column,String value){
+        Log.d("Ent_UpdateUser","Enter the updateUser method in the TaskDB class.");
+        boolean success = false;
+        //Declare and instantiate a new database object to handle the database operations
+        SQLiteDatabase bd = getWritableDatabase();
+        String updateUser ="UPDATE USER SET ";
+        String whereId = " WHERE _id = 0";
+        String sql = updateUser+column+" = '"+value+"'"+ whereId;
+        //Try Catch block to execute the sql command to update corresponding table
+        try{
+            //Run the query and change success to true if no issues
+            bd.execSQL(sql);
+            success = true;
+        }catch (Exception e) {
+            //Log the exception message
+            Log.d("DataBaseException",e.toString());
+        }//End of try and catch block
+        Log.d("Ext_UpdateUser","Exit the updateUser method in the TaskDB class.");
+        return success;
+    }//End of updateUser method
 
 
 

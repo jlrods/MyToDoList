@@ -1,14 +1,23 @@
 package io.github.jlrods.mytodolist;
 
+import android.Manifest;
+import android.app.Activity;
+import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.media.Image;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
@@ -33,6 +42,7 @@ import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.net.URI;
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener{
@@ -81,7 +91,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private static final String groceryCategory = "Groceries";
     private static final String allCategory ="All";
 
-
+    private static final int CAMERA_ACCESS_REQUEST = 0;
+    private static final int GALLERY_ACCESS_REQUEST = 0;
+    final static int RESULT_PROFILE_IMAGE_CAMERA= 0;
+    final static int RESULT_PROFILE_IMAGE_GALLERY= 1;
+    private Uri uriProfileImage;
+    private ImageView imgUserProfile;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -244,6 +259,38 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         navigationView = (NavigationView) findViewById(R.id.nav_view);
         this.updateNavMenu(this.navigationView.getMenu());
         navigationView.setNavigationItemSelectedListener(this);
+        View headerView = navigationView.getHeaderView(0);
+        //Declare and initialize the user avatar image
+        imgUserProfile = (ImageView) headerView.findViewById(R.id.imgUserProfile);
+        imgUserProfile.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                setUserProfileImage();
+            }
+        });
+        Cursor user = db.runQuery("SELECT * FROM USER");
+        if(user.moveToNext()){
+            if(!user.getString(3).equals("")){
+                imgUserProfile.setImageURI(Uri.parse(user.getString(3)));
+            }
+            TextView tvUserName = (TextView) headerView.findViewById(R.id.tvUserName);
+            tvUserName.setText(user.getString(1));
+            tvUserName.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    setUserProfileName();
+                }
+            });
+            TextView tvUserEmail = (TextView) headerView.findViewById(R.id.tvUserEmail);
+            tvUserEmail.setText(user.getString(2));
+            tvUserEmail.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    setUserProfileEmail();
+                }
+            });
+        }
+
         Log.d("Ent_onCreateMain","Enter onCreate method in MainActivity class.");
     }//End of onCreate Method
 
@@ -973,7 +1020,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }//End of updateTopMenuUI method
 
 
-
     //Method to filter the grocery list by grocery type
     public void filterByType(){
         Log.d("Ent_filterByType","Enter filterByType method in the MainActivity class.");
@@ -987,7 +1033,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         if(this.cbOnlyChecked.isChecked()){
             this.cbOnlyChecked.setChecked(false);
         }//End of if statement to check the check box state
-        //Set search boolean varible to false
+        //Set search boolean variable to false
         if(this.isSearchFilter){
             this.isSearchFilter = false;
         }//End of if statement to check isSearchFilter
@@ -1402,7 +1448,233 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         //Call method to update the adapter and the recyclerView
         this.updateRecyclerViewData(sql);
         Log.d("Ext_getFullList","Exit getFullList method in the MainActivity class.");
-    }
+    }//End of method to getFullList
+
+    //Method to update User Profile Name
+    private void setUserProfileName(){
+        Log.d("Ent_setProfName","Enter setUserProfileName method in the MainActivity class.");
+        //Declare and instantiate a new EditText object
+        final EditText input= new EditText(this);
+        //Set text to empty text
+        input.setText("");
+        //Display a Dialog to ask for the List name (New Category)
+        new AlertDialog.Builder(this)
+                .setTitle("Set user name")//Set title
+                .setMessage("Please enter your name:")// Set the message that clarifyes the requested action
+                .setView(input)
+                .setPositiveButton("Ok",new DialogInterface.OnClickListener(){
+                    public void onClick(DialogInterface dialog,int whichButton){
+                        //Check the input field is not empty
+                        if(!input.getText().toString().trim().equals("")){
+                            View headerView = navigationView.getHeaderView(0);
+                            TextView tvUserName = (TextView) headerView.findViewById(R.id.tvUserName);
+                            //Try to update user name on the DB and check result from DB
+                            if(db.updateUser("UserName",input.getText().toString())){
+                                tvUserName.setText(input.getText());
+                            }else{
+                                //Display error message if the boolean received from DB is false
+                                Toast.makeText(MainActivity.this,"Something went wrong!!! Unable to update the user email.",Toast.LENGTH_SHORT).show();
+                            }//End of if else statement to update the user data and receive result of that DB action
+                        }else{
+                            //If input fiel is empty, display an error message
+                            Toast.makeText(MainActivity.this,"The user name cannot be left in blank. Please, type a name in the input field.",Toast.LENGTH_SHORT).show();
+                            //input.requestFocus();
+                        }//End of if else statement to check the input field is not left blank
+                    }//Define the positive button
+                })//End of AlerDialog Builder
+                .setNegativeButton(R.string.cancel,null)
+                .create()
+                .show();
+        Log.d("Ext_setProfName","Exit setUserProfileName method in the MainActivity class.");
+    }//End of setUserProfileName method
+
+    //Method to update user profile email
+    private void setUserProfileEmail(){
+        Log.d("Ent_setProfEmail","Enter setUserProfileEmail method in the MainActivity class.");
+        //Declare and instantiate a new EditText object
+        final EditText input= new EditText(this);
+        //Set text to empty text
+        input.setText("");
+        //Display a Dialog to ask for the List name (New Category)
+        new AlertDialog.Builder(this)
+                .setTitle("Set user email")//Set title
+                .setMessage("Please enter your email:")// Set the message that clarifyes the requested action
+                .setView(input)
+                .setPositiveButton("Ok",new DialogInterface.OnClickListener(){
+                    public void onClick(DialogInterface dialog,int whichButton){
+                        //Check the input field is not empty
+                        if(!input.getText().toString().trim().equals("")){
+                            View headerView = navigationView.getHeaderView(0);
+                            TextView tvUserEmail = (TextView) headerView.findViewById(R.id.tvUserEmail);
+                            //Try to update user email on the DB and check result from DB
+                            if(db.updateUser("UserEmail",input.getText().toString())){
+                                tvUserEmail.setText(input.getText());
+                            }else{
+                                //Display error message if the boolean received from DB is false
+                                Toast.makeText(MainActivity.this,"Something went wrong!!! Unable to update the user email.",Toast.LENGTH_SHORT);
+                            }//End of if else statement to update the user data and receive result of that DB action
+                        }else{
+                            //If input fiel is empty, display an error message
+                            Toast.makeText(MainActivity.this,"The user email cannot be left in blank. Please, type a name in the input field.",Toast.LENGTH_SHORT).show();
+                            //input.requestFocus();
+                        }//End of if else statement to check the input field is not left blank
+                    }//Define the positive button
+                })//End of AlertDialog Builder
+                .setNegativeButton(R.string.cancel,null)
+                .create()
+                .show();
+        Log.d("Ext_setProfEmail","Exit setUserProfileEmail method in the MainActivity class.");
+    }//End of setUserProfileEmail method
+
+    //Method to update user profile picture
+    private void setUserProfileImage(){
+        Log.d("Ent_setProfPict","Enter setUserProfileImage method in the MainActivity class.");
+        //CharSequence sources[] = new CharSequence[]{"Camera","Gallery"};
+        new AlertDialog.Builder(MainActivity.this)
+                .setTitle("Select an option to load a profile picture:")
+                //.setMessage("Select an option to load a profile picture:")
+                .setSingleChoiceItems(R.array.profileImageSources,0, null)//End of setSingleChoice method
+                .setPositiveButton("Ok",new DialogInterface.OnClickListener(){
+                    public void onClick(DialogInterface dialog,int whichButton){
+                        //Check the option selected by user
+                        int selectedPosition = ((AlertDialog)dialog).getListView().getCheckedItemPosition();
+                        if(selectedPosition == 0){
+                            if (ContextCompat.checkSelfPermission(MainActivity.this,
+                                    Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                                    == PackageManager.PERMISSION_GRANTED) {
+                                //If permit has been granted Call method to take image via the camera
+                                takePicture(null);
+                            } else {
+                                //Otherwise, call method to display justification for this permit and request access to it
+                                permissionRequest(Manifest.permission.WRITE_EXTERNAL_STORAGE, "Without this permit"+
+                                                " the app won't be able to take pictures with the camera.",
+                                        CAMERA_ACCESS_REQUEST, MainActivity.this);
+                            }//End of if else statement to check the Camera access rights has been granted or not
+                        }else if(selectedPosition==1){
+                            if (ContextCompat.checkSelfPermission(MainActivity.this,
+                                    Manifest.permission.READ_EXTERNAL_STORAGE)
+                                    == PackageManager.PERMISSION_GRANTED) {
+                                //If permit has been granted Call method to get access to gallery app via new intent
+                                loadPicture(null);
+                            } else {
+                                //Otherwise, call method to display justification for this permit and request access to it
+                                permissionRequest(Manifest.permission.READ_EXTERNAL_STORAGE, "Without this permit"+
+                                                " the app won't be able to load pictures from your selected gallery.",
+                                        GALLERY_ACCESS_REQUEST, MainActivity.this);
+                            }//end of if else statement to check the read storage access rights has been granted or not
+                        }else{
+                            finish();
+                        }//End of if else statement to check the selectedPosition value
+                    }//End of Onclick method
+                })
+                .setNegativeButton(R.string.cancel,null)
+                .create()
+                .show();
+        Log.d("Ext_setProfPict","Exit setUserProfileImage method in the MainActivity class.");
+    }// End of setUserProfileImage method
+
+    //Method to display alert dialog to request permission for access rights
+    public static void permissionRequest(final String permit, String justify,final int requestCode, final Activity activity) {
+        Log.d("Ent_permitReq","Enter permissionRequest method in the MainActivity class.");
+        //Check the permission request needs formal explanation
+        if (ActivityCompat.shouldShowRequestPermissionRationale(activity,
+                permit)){
+            //Display alert with justification about why permit is necessary
+            new AlertDialog.Builder(activity)
+                    .setTitle("Permit request")
+                    .setMessage(justify)
+                    .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int whichButton) {
+                            //Call method to request permission
+                            ActivityCompat.requestPermissions(activity,
+                                    new String[]{permit}, requestCode);
+                        }})
+                    .show();
+        } else {
+            //Otherwise, proceed to request permission
+            ActivityCompat.requestPermissions(activity,
+                    new String[]{permit}, requestCode);
+        }//End of if else statement to check the permission request must be displyed
+        Log.d("Ext_permitReq","Exit permissionRequest method in the MainActivity class.");
+    }//End of permissionRequest method
+
+    //Method To take a picture via intent
+    public void takePicture(View view) {
+        Log.d("Ent_TakePicture","Enter takePicture method in the MainActivity class.");
+        //Declare and initialize a new Intent object to call camera app
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        //Check the PackageManager is not null
+        if (intent.resolveActivity(getPackageManager()) != null) {
+            ContentValues values = new ContentValues(1);
+            values.put(MediaStore.Images.Media.MIME_TYPE, "image/jpg");
+            uriProfileImage = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+            intent.putExtra(MediaStore.EXTRA_OUTPUT, uriProfileImage);
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+            startActivityForResult(intent, RESULT_PROFILE_IMAGE_CAMERA);
+        } else {
+                Toast.makeText(this, "Error while capturing the photo.", Toast.LENGTH_LONG).show();
+        }
+        Log.d("Ext_TakePicture","Exit takePicture method in the MainActivity class.");
+    }// End of takePicture method
+
+    //Method to load ad picture from gallery app
+    public void loadPicture(View view) {
+        Log.d("Ent_LoadPicture","Enter loadPicture method in the MainActivity class.");
+        //Declare a new intent
+        Intent intent;
+        //Check SDK version
+        if (Build.VERSION.SDK_INT < 19){
+            //Log the current verison
+            Log.i("Build.VERSION", "< 19");
+            //Initiallize the intent object and set it up for calling the Gallery app
+            intent = new Intent();
+            intent.setAction(Intent.ACTION_GET_CONTENT);
+            intent.setType("image/*");
+            startActivityForResult(intent, RESULT_PROFILE_IMAGE_GALLERY);
+        } else {
+            //Log the current verison
+            Log.i("Build.VERSION", ">= 19");
+            //Initiallize the intent object and set it up for calling the Gallery app
+            intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+            intent.addCategory(Intent.CATEGORY_OPENABLE);
+            intent.setType("image/*");
+            startActivityForResult(intent, RESULT_PROFILE_IMAGE_GALLERY);
+        }//End of if else statement that checks the SDK version
+        Log.d("Ext_LoadPicture","Exit loadPicture method in the MainActivity class.");
+    }//End of loadPicture method
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent
+            data) {
+        Log.d("Ent_onActResult","Enter onActivityResult method in the MainActivity class.");
+        //Check if result code matches the result from image taken from camera action
+        if(requestCode == RESULT_PROFILE_IMAGE_CAMERA){
+            //If action is the image taken from camera, check the result is good and the variable to hold the image location is not empty
+            if(resultCode == Activity.RESULT_OK && !uriProfileImage.equals("")){
+                //Call method to update the DB, and check the result received form DB is successful
+                if(db.updateUser("Photo",uriProfileImage.toString())){
+                    //Set the image as per uri from camera
+                    imgUserProfile.setImageURI(uriProfileImage);
+                }else{
+                    //Otherwise, display error message
+                }
+            }else{
+                //Otherwise, display error message
+            }//Check if request code comes from the Gallery image action
+        }else if(requestCode == RESULT_PROFILE_IMAGE_GALLERY){
+            //If it comes from the gallery action, check the result code is OK
+            if(resultCode == Activity.RESULT_OK ){
+                //Set the image as per path coming from the intent. The data can be parsed as an uri
+                String uri = data.getDataString();
+                //Call method to update the DB, and check the result received form DB is successful
+                if(db.updateUser("Photo",uri)){
+                    imgUserProfile.setImageURI(Uri.parse(uri));
+                }//End of if statment
+            }//End of if statemnt that checks the resultCode is OK
+        }//End of if else statement to check the request code and define the proper actinos to be taken
+        Log.d("Ext_onActResult","Exit onActivityResult method in the MainActivity class.");
+    }//End of onActivityResult method
+
 
     public static String getGroceryCategory(){
         return groceryCategory;
