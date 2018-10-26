@@ -281,12 +281,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     setUserProfileName();
                 }
             });
-            TextView tvUserEmail = (TextView) headerView.findViewById(R.id.tvUserEmail);
-            tvUserEmail.setText(user.getString(2));
-            tvUserEmail.setOnClickListener(new View.OnClickListener() {
+            TextView tvUserMessage = (TextView) headerView.findViewById(R.id.tvUserMessage);
+            tvUserMessage.setText(user.getString(2));
+            tvUserMessage.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    setUserProfileEmail();
+                    setUserProfileMessage();
                 }
             });
         }
@@ -767,10 +767,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                                         String deleteConfirmationMessage = "Are you sure you want to delete the following Task List";
                                         if(categoriesToBeDeleted.size()>1){
                                             //Make the text plural if more than one category will be deleted
-                                            deleteConfirmationMessage += "s: \n\t* ";
+                                            deleteConfirmationMessage += "s: \n\t- ";
                                         }else{
                                             //Make the text singular if only one category will be deleted
-                                            deleteConfirmationMessage += ": \n\t* ";
+                                            deleteConfirmationMessage += ": \n\t- ";
                                         }//End of if else statement fo selected the proper warning message to display
                                         //For loop to go through the list of categories to be deleted and add every list's name into the warning message
                                         for(int i=0;i<categoriesToBeDeleted.size();i++){
@@ -779,7 +779,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                                             //Check this is not the last item in the list
                                             if(i+1<categoriesToBeDeleted.size()){
                                                 //If it is not the last one, add an extra line and bullet
-                                                deleteConfirmationMessage += "\n\t* ";
+                                                deleteConfirmationMessage += "\n\t- ";
                                             }//End of if statement to check if it's the last one item in the list
                                         }//End of for loop to include the list names to be deleted
                                         //Display a final warning message summarizing  all the lists to be deleted and informing all the tasks in that lis will be deleted
@@ -1473,7 +1473,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                                 tvUserName.setText(input.getText());
                             }else{
                                 //Display error message if the boolean received from DB is false
-                                Toast.makeText(MainActivity.this,"Something went wrong!!! Unable to update the user email.",Toast.LENGTH_SHORT).show();
+                                Toast.makeText(MainActivity.this,"Something went wrong!!! Unable to update the user name.",Toast.LENGTH_SHORT).show();
                             }//End of if else statement to update the user data and receive result of that DB action
                         }else{
                             //If input fiel is empty, display an error message
@@ -1488,34 +1488,34 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         Log.d("Ext_setProfName","Exit setUserProfileName method in the MainActivity class.");
     }//End of setUserProfileName method
 
-    //Method to update user profile email
-    private void setUserProfileEmail(){
-        Log.d("Ent_setProfEmail","Enter setUserProfileEmail method in the MainActivity class.");
+    //Method to update user profile message
+    private void setUserProfileMessage(){
+        Log.d("Ent_setProfMesg","Enter setUserProfileMessage method in the MainActivity class.");
         //Declare and instantiate a new EditText object
         final EditText input= new EditText(this);
         //Set text to empty text
         input.setText("");
         //Display a Dialog to ask for the List name (New Category)
         new AlertDialog.Builder(this)
-                .setTitle("Set user email")//Set title
-                .setMessage("Please enter your email:")// Set the message that clarifyes the requested action
+                .setTitle("Set user message")//Set title
+                .setMessage("Please enter your message:")// Set the message that clarifyes the requested action
                 .setView(input)
                 .setPositiveButton("Ok",new DialogInterface.OnClickListener(){
                     public void onClick(DialogInterface dialog,int whichButton){
                         //Check the input field is not empty
                         if(!input.getText().toString().trim().equals("")){
                             View headerView = navigationView.getHeaderView(0);
-                            TextView tvUserEmail = (TextView) headerView.findViewById(R.id.tvUserEmail);
-                            //Try to update user email on the DB and check result from DB
-                            if(db.updateUser("UserEmail",input.getText().toString())){
-                                tvUserEmail.setText(input.getText());
+                            TextView tvUserMessage = (TextView) headerView.findViewById(R.id.tvUserMessage);
+                            //Try to update user message on the DB and check result from DB
+                            if(db.updateUser("UserMessage",input.getText().toString())){
+                                tvUserMessage.setText(input.getText());
                             }else{
                                 //Display error message if the boolean received from DB is false
-                                Toast.makeText(MainActivity.this,"Something went wrong!!! Unable to update the user email.",Toast.LENGTH_SHORT);
+                                Toast.makeText(MainActivity.this,"Something went wrong!!! Unable to update the user message.",Toast.LENGTH_SHORT);
                             }//End of if else statement to update the user data and receive result of that DB action
                         }else{
                             //If input fiel is empty, display an error message
-                            Toast.makeText(MainActivity.this,"The user email cannot be left in blank. Please, type a name in the input field.",Toast.LENGTH_SHORT).show();
+                            Toast.makeText(MainActivity.this,"The user message cannot be left in blank. Please, type a name in the input field.",Toast.LENGTH_SHORT).show();
                             //input.requestFocus();
                         }//End of if else statement to check the input field is not left blank
                     }//Define the positive button
@@ -1523,8 +1523,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 .setNegativeButton(R.string.cancel,null)
                 .create()
                 .show();
-        Log.d("Ext_setProfEmail","Exit setUserProfileEmail method in the MainActivity class.");
-    }//End of setUserProfileEmail method
+        Log.d("Ext_setProfMessage","Exit setUserProfileMessage method in the MainActivity class.");
+    }//End of setUserProfileMessage method
 
     //Method to update user profile picture
     private void setUserProfileImage(){

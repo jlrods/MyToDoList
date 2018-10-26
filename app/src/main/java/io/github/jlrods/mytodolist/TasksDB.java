@@ -26,7 +26,7 @@ public class TasksDB extends SQLiteOpenHelper {
         Log.d("Ent_DBOncreate","Enter onCreate method in TasksDB class.");
 
         //Create User table
-        db.execSQL("CREATE TABLE USER (_id INTEGER PRIMARY KEY AUTOINCREMENT,UserName TEXT, UserEmail TEXT, Photo TEXT);");
+        db.execSQL("CREATE TABLE USER (_id INTEGER PRIMARY KEY AUTOINCREMENT,UserName TEXT, UserMessage TEXT, Photo TEXT);");
         //Populate the user table with unique user
         db.execSQL("INSERT INTO USER VALUES(null,'MyToDoList','example@gmail.com','')");
 
