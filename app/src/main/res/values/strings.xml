@@ -9,7 +9,8 @@
     <string name="checkedOnly">Checked items only</string>
     <string name="checkedTask">Checked tasks only</string>
     <string name="checkedGrocery">Checked groceries</string>
-    <string name="markDone">Mark as done</string>
+    <string name="checked">Checked</string>
+    <string name="markDone">Done</string>
     <string name="filterByType">Filter by type</string>
     <string name="hintSearchTask">Enter the text  you want to search...</string>
     <string name="cancel">Cancel</string>

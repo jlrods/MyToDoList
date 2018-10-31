@@ -891,11 +891,17 @@ public class TasksDB extends SQLiteOpenHelper {
     public boolean updateUser(String column,String value){
         Log.d("Ent_UpdateUser","Enter the updateUser method in the TaskDB class.");
         boolean success = false;
-        //Declare and instantiate a new database object to handle the database operations
+        Cursor userData;
+                //Declare and instantiate a new database object to handle the database operations
         SQLiteDatabase bd = getWritableDatabase();
+        userData = this.runQuery("SELECT * FROM USER");
         String updateUser ="UPDATE USER SET ";
-        String whereId = " WHERE _id = 0";
-        String sql = updateUser+column+" = '"+value+"'"+ whereId;
+        String whereId = " WHERE _id = ";
+        String sql = "";
+        if(userData.moveToNext()){
+
+            sql = updateUser+column+" = '"+value+"'"+ whereId+userData.getInt(0);
+        }
         //Try Catch block to execute the sql command to update corresponding table
         try{
             //Run the query and change success to true if no issues

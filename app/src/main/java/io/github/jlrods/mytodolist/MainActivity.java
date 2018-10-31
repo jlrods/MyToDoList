@@ -998,14 +998,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     public void updateTopMenuUI(){
         Log.d("Ent_updateUIMA","Enter updateTopeMenuUI in MainActivity class.");
         String currentCategoryName = this.currentCategory.getName();
+        this.tvOnlyChecked.setText(R.string.checked);
         //Check current category and select the correct actions to update the top menu
         if(currentCategoryName.toLowerCase().equals(groceryCategory.toLowerCase())){
-            this.tvOnlyChecked.setText(R.string.checkedGrocery);
+            //this.tvOnlyChecked.setText(R.string.checkedGrocery);
             this.imgCurrentList.setImageResource(R.drawable.groceries_icon);
             this.imgHighlightFilter.setImageResource(R.drawable.filter_icon);
             this.tvHighlightFilter.setText(R.string.filterByType);
         }else{
-            this.tvOnlyChecked.setText(R.string.checkedTask);
+
             this.imgHighlightFilter.setImageResource(R.drawable.done_icon);
             this.tvHighlightFilter.setText(R.string.markDone);
             if(currentCategoryName.toLowerCase().equals(allCategory.toLowerCase())){
@@ -1396,7 +1397,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                                     sql = "SELECT * FROM TASK ORDER BY Category ASC";
                                 }else{
                                     //Define a sql query for specific category, coming from the current category id
-                                    sql = "SELECT * FROM TASK WHERE Category = "+currentCategory.getId()+ "ORDER BY Category ASC";
+                                    sql = "SELECT * FROM TASK WHERE Category = "+currentCategory.getId()+ " ORDER BY Category ASC";
                                 }
                                 //Call method to update the adapter and the recyclerView
                                 updateRecyclerViewData(sql);
