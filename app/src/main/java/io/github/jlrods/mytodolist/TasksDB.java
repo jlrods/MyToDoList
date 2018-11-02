@@ -465,7 +465,7 @@ public class TasksDB extends SQLiteOpenHelper {
     }//End of UpdateTable method
 
     //Method to internally convert a boolean into a int number 1 or  0
-    private int toInt(boolean bool){
+    public int toInt(boolean bool){
         Log.d("Ent_toInt","Enter toInt method in TasksDB class.");
         if(bool){
             Log.d("Ext_toInt","Exit toInt method in TasksDB class (Returned value 1 ).");

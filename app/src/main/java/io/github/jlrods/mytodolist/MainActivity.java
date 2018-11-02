@@ -294,6 +294,86 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         Log.d("Ent_onCreateMain","Enter onCreate method in MainActivity class.");
     }//End of onCreate Method
 
+    @Override
+    protected void onSaveInstanceState(Bundle saveState) {
+        //Call super method
+        super.onSaveInstanceState(saveState);
+        Log.d("Ent_onSaveInstance","Enter the overridden section of onSaveInstanceSate method on MainActivity.");
+        //Save the current task list selected by user
+        //Declare and instantiate an int to hold the current category id
+        int category = currentCategory.getId();
+        //Store the current category id in the bundle object
+        saveState.putInt("category",category);
+        //Save filters applied so the can be set up again
+        // Declare and initialize an int to hold the only checked items filter state (0 false, 1 true)
+        int onlyChecked = db.toInt(cbOnlyChecked.isChecked());
+        //Store the checked filter state in the app state
+        saveState.putInt("checkedFilter",onlyChecked);
+        // Declare and initialize an int to hold the only search filter state (0 false, 1 true)
+        int isSearchFilter = db.toInt(this.isSearchFilter);
+        //Store the checked filter state in the app state
+        saveState.putInt("isSearchFiler",isSearchFilter);
+        //If the search filer is applied save the last search text array in the app state
+        if(this.isSearchFilter){
+            //Last search for the TASK table
+            saveState.putString("searchFilterText0",lastSearchText[0]);
+            //Last search for the GROCERIES table
+            saveState.putString("searchFilterText1",lastSearchText[1]);
+        }//End of if statement to check the search filter is applied
+        //Check the current category is the groceries category
+        if(category == findCategoryByName(groceryCategory).getId()){
+            //If it is the groceries category, check if the type filter is being used
+            //Declare and initialize an int to hold the selected types array list size
+            int selectedTypesQty = selectedTypes.size();
+            //Save the size in the app state
+            saveState.putInt("selectedTypesQty",selectedTypesQty);
+
+        }//End of if statement to check the current category
+        Log.d("Ext_onSaveInstance","Exit the orverriden section of onSaveInstanceSate method on MainActivity.");
+    }// End of onSaveInstanceState method
+
+    @Override
+    protected void onRestoreInstanceState(Bundle restoreState) {
+        //Call the super method
+        super.onRestoreInstanceState(restoreState);
+        Log.d("Ent_onRestoreInstance","Enter the orverriden section of onRestroeInstanceState method on MainActivity.");
+        //Check the bundle object is not empty
+        if (restoreState != null){
+            //Retrieve the current category ID stored in the app state
+            int category = restoreState.getInt("category");
+            //Assign the currentCategory variable the category that matches the previous ID
+            currentCategory = findCategoryById(category);
+            //Assign to isSearchFiler and onlyChecked filter flags the value stored on the app state
+            this.isSearchFilter = db.toBoolean(restoreState.getInt("isSearchFiler"));
+            this.cbOnlyChecked.setChecked(db.toBoolean(restoreState.getInt("checkedFilter")));
+            if(this.isSearchFilter){
+                //Save the last search text for the TASK table
+                this.lastSearchText[0] = restoreState.getString("searchFilterText0");
+            }//End of if statement to check the search filter is applied
+            //Check the current category is the GROCERIES category
+            if(currentCategory.equals(findCategoryByName(groceryCategory))){
+                //Check the isSearchFilter applied
+                if(this.isSearchFilter){
+                    //Save the last search text for the groceries table
+                    this.lastSearchText[1] = restoreState.getString("searchFilterText1");
+                }//End of if statement to check the search filter is applied
+                //Check the type filter is applied
+                int selectedTypesQty = restoreState.getInt("selectedTypesQty");
+                if(selectedTypesQty>0){
+                    //Look for the grocery types to be filtered
+                    selectedTypes = this.findSelectedTypes();
+                }//End of if statement to check the type filer is not empty
+                //Assign the groceryAdapter in the recyclerView object, otherwise it will use the taskAdapter
+                recyclerView.setAdapter(groceryAdapter);
+            }//End of if statement to check the current category value
+            //Update the top menu
+            this.updateTopMenuUI();
+            //Refresh the recycler viewer with proper data set based on app state parameters
+            updateRecyclerViewData(getSQLForRecyclerView());
+        }//End of if statement to check the restore item is not null
+        Log.d("Ext_onRestoreInstance","Exit the orverriden section of onRestroeInstanceState method on MainActivity.");
+    }// End of onRestoreInstanceState method
+
     //Method to return sql string to be used to update the REcyclerViewer object
     public String getSQLForRecyclerView(){
         Log.d("Ent_getSQLRecView","Enter getSQLForRecyclerView method in MainActivity class.");
@@ -316,7 +396,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             String column1 = " Description ";
             String column2 = " Category ";
             String direction =" ASC";
-            int i =0;// inteer to define position to search text in the lastSearchText String array
+            int i =0;// integer to define position to search text in the lastSearchText String array
             //Check if current category is the groceries category
             if(currentCategory.equals(findCategoryByName(groceryCategory))){
                 //If that is the case, do some changes for this specific category
@@ -997,6 +1077,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     //Method to update MainActivity UI top menu (No  the action bar)
     public void updateTopMenuUI(){
         Log.d("Ent_updateUIMA","Enter updateTopeMenuUI in MainActivity class.");
+        //Get the current category name and store it in a String variable
         String currentCategoryName = this.currentCategory.getName();
         this.tvOnlyChecked.setText(R.string.checked);
         //Check current category and select the correct actions to update the top menu
@@ -1005,15 +1086,19 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             this.imgCurrentList.setImageResource(R.drawable.groceries_icon);
             this.imgHighlightFilter.setImageResource(R.drawable.filter_icon);
             this.tvHighlightFilter.setText(R.string.filterByType);
+            //Check the type filter is applied, if that is the case, change text color
+            if(selectedTypes.size()>0){
+                tvHighlightFilter.setTextColor(getResources().getColor(R.color.colorAccent));
+            }//End of if statement to check the type filter is applied
         }else{
-
+            //For all other task lists
             this.imgHighlightFilter.setImageResource(R.drawable.done_icon);
             this.tvHighlightFilter.setText(R.string.markDone);
             if(currentCategoryName.toLowerCase().equals(allCategory.toLowerCase())){
                 this.imgCurrentList.setImageResource(R.drawable.all_icon);
             }else{
                 this.imgCurrentList.setImageResource(R.drawable.list_icon);
-            }
+            }//End of if else statement to check the current task list is the all category
         }//End of if else statement to check the current category name
         //Display the proper name
         this.tvCurrentList.setText(this.currentCategory.getName().toString());
@@ -1174,7 +1259,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             this.tvHighlightFilter.setTextColor(getResources().getColor(R.color.colorSecondayText));
         } //End of if statement to check slected types list size
         Log.d("Ext_clearType","Exit clearTypeFilter method in the MainActivity class.");
-    }//End of clearTypeFilter method#
+    }//End of clearTypeFilter method
 
     //Method to highlight as done the selected tasks
     private void highlightSelectedTask(){
@@ -1425,6 +1510,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             //Run the query and update the recyclerView
             this.unfilterCheckedOnly();
         }//End of if that checks the only checked filter
+        if(currentCategory.equals(findCategoryByName(groceryCategory))){
+            if(selectedTypes.size()>0){
+                //Reset the filter type
+                this.clearTypeFilter();
+                //Run the query and update the recyclerView
+                this.unfilterCheckedOnly();
+            }//End of if statement to check the filter type is applied
+        }//End of if statement to check the the current category is the groceries category
         Log.d("Ext_getFullListNF","Exit getFullListNoFilter method in the MainActivity class.");
     }//End of getFullList method
 
