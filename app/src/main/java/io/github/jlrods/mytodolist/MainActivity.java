@@ -1550,7 +1550,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         //Declare and instantiate a new EditText object
         final EditText input= new EditText(this);
         //Set text to empty text
-        input.setText("");
+        //input.setText("");
+        //Populate current name in the input text and get focus
+        View headerView = navigationView.getHeaderView(0);
+        TextView tvUserName = (TextView) headerView.findViewById(R.id.tvUserName);
+        input.setText(tvUserName.getText());
+        input.requestFocus();
         //Display a Dialog to ask for the List name (New Category)
         new AlertDialog.Builder(this)
                 .setTitle("Set user name")//Set title
@@ -1587,8 +1592,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         Log.d("Ent_setProfMesg","Enter setUserProfileMessage method in the MainActivity class.");
         //Declare and instantiate a new EditText object
         final EditText input= new EditText(this);
-        //Set text to empty text
-        input.setText("");
+        //Set text to current message text
+        //input.setText("");
+        View headerView = navigationView.getHeaderView(0);
+        TextView tvUserMessage = (TextView) headerView.findViewById(R.id.tvUserMessage);
+        input.setText(tvUserMessage.getText());
+        input.requestFocus();
         //Display a Dialog to ask for the List name (New Category)
         new AlertDialog.Builder(this)
                 .setTitle("Set user message")//Set title
@@ -1608,7 +1617,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                                 Toast.makeText(MainActivity.this,"Something went wrong!!! Unable to update the user message.",Toast.LENGTH_SHORT);
                             }//End of if else statement to update the user data and receive result of that DB action
                         }else{
-                            //If input fiel is empty, display an error message
+                            //If input field is empty, display an error message
                             Toast.makeText(MainActivity.this,"The user message cannot be left in blank. Please, type a name in the input field.",Toast.LENGTH_SHORT).show();
                             //input.requestFocus();
                         }//End of if else statement to check the input field is not left blank
