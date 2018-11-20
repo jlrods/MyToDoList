@@ -94,7 +94,13 @@ public class TaskAdapter extends
     }//End of onBindViewHolder
 
     @Override
-    public int getItemCount() {return cursor.getCount(); }
+    public int getItemCount() {
+        if(cursor != null){
+            return cursor.getCount();
+        }else{
+            return 0;
+        }
+    }
 
     //Method to customize each viewholder with each task data
     public void customizeViewHolder(ViewHolder h,int position){

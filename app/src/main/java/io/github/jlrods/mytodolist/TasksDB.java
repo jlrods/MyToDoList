@@ -24,7 +24,11 @@ public class TasksDB extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         Log.d("Ent_DBOncreate","Enter onCreate method in TasksDB class.");
-
+        //Create table to store app state
+        db.execSQL("CREATE TABLE APP (_id INTEGER PRIMARY KEY AUTOINCREMENT,currentCategory INTEGER, isSearchFilter INTEGER, isChecked INTEGER," +
+                "lastSearchTask TEXT,lastSearchGrocery TEXT);");
+        //Populate default state of app
+        db.execSQL("INSERT INTO APP VALUES(null,1,0,0,'','')");
         //Create User table
         db.execSQL("CREATE TABLE USER (_id INTEGER PRIMARY KEY AUTOINCREMENT,UserName TEXT, UserMessage TEXT, Photo TEXT);");
         //Populate the user table with unique user
@@ -465,7 +469,7 @@ public class TasksDB extends SQLiteOpenHelper {
     }//End of UpdateTable method
 
     //Method to internally convert a boolean into a int number 1 or  0
-    private int toInt(boolean bool){
+    public int toInt(boolean bool){
         Log.d("Ent_toInt","Enter toInt method in TasksDB class.");
         if(bool){
             Log.d("Ext_toInt","Exit toInt method in TasksDB class (Returned value 1 ).");
@@ -601,23 +605,6 @@ public class TasksDB extends SQLiteOpenHelper {
         Log.d("Ext_ExtractGrocery","Exit extractGrocery method in the TaskDB class.");
         return grocery;
     }//End of extractGrocery method
-
-   /* public Task extractGrocery(Cursor c,int id){
-        //Declare null Task object to be returned by method
-        Grocery grocery = null;
-        boolean found = false;
-        int i =0;
-        do{
-            if(c.getColumnIndexOrThrow("_id")== id){
-                grocery = extractGrocery(c);
-                found = true;
-            }else{
-                i++;
-            }
-        }while(!found && i<c.getCount());
-        return grocery;
-    }//End of extractTask method*/
-
 
     //Method to retrieve the list of categories stored on the database
     public ArrayList<Category> getCategoryList(){
@@ -891,11 +878,17 @@ public class TasksDB extends SQLiteOpenHelper {
     public boolean updateUser(String column,String value){
         Log.d("Ent_UpdateUser","Enter the updateUser method in the TaskDB class.");
         boolean success = false;
+        Cursor userData;
         //Declare and instantiate a new database object to handle the database operations
         SQLiteDatabase bd = getWritableDatabase();
+        userData = this.runQuery("SELECT * FROM USER");
         String updateUser ="UPDATE USER SET ";
-        String whereId = " WHERE _id = 0";
-        String sql = updateUser+column+" = '"+value+"'"+ whereId;
+        String whereId = " WHERE _id = ";
+        String sql = "";
+        if(userData.moveToNext()){
+
+            sql = updateUser+column+" = '"+value+"'"+ whereId+userData.getInt(0);
+        }
         //Try Catch block to execute the sql command to update corresponding table
         try{
             //Run the query and change success to true if no issues
@@ -908,6 +901,38 @@ public class TasksDB extends SQLiteOpenHelper {
         Log.d("Ext_UpdateUser","Exit the updateUser method in the TaskDB class.");
         return success;
     }//End of updateUser method
+
+    public boolean updateAppState(int currentCategory,int isSearchFilter, int isChecked, String lastSearchTask, String lastSearchGrocery){
+        Log.d("Ent_UpdateState","Enter the updateAppState method in the TaskDB class.");
+        boolean success = false;
+        Cursor appState;
+        //Declare and instantiate a new database object to handle the database operations
+        SQLiteDatabase db = getWritableDatabase();
+        appState = this.runQuery("SELECT * FROM APP");
+        String updateState ="UPDATE APP SET ";
+        String fields = " currentCategory = " + currentCategory + ","+
+                        " isSearchFilter = " + isSearchFilter + ","+
+                        " isChecked = "+ isChecked + ","+
+                        " lastSearchTask = '" + lastSearchTask + ","+
+                        " lastSearchGrocery = '" + lastSearchGrocery;
+        String whereId = " WHERE _id = ";
+        String sql = "";
+        if(appState.moveToNext()){
+            sql = updateState+fields+ whereId+appState.getInt(0);
+        }
+        //Try Catch block to execute the sql command to update corresponding table
+        try{
+            //Run the query and change success to true if no issues
+            db.execSQL(sql);
+            success = true;
+        }catch (Exception e) {
+            //Log the exception message
+            Log.d("DataBaseException",e.toString());
+        }//End of try and catch block
+        Log.d("Ext_UpdateState","Exit the updateAppState method in the TaskDB class.");
+        return success;
+    }//End of updateAppState
+
 
 
 

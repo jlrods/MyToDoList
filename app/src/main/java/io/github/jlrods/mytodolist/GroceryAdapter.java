@@ -63,7 +63,11 @@ public class GroceryAdapter extends TaskAdapter{
 
     @Override
     public int getItemCount() {
-        return cursor.getCount();
+        if(cursor != null){
+            return cursor.getCount();
+        }else{
+            return 0;
+        }
     }
 
     //Method to cutomize each viewholder with each task data. This does not override the same method in the TaskAdapter class as the argument types are different
