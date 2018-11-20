@@ -18,11 +18,11 @@
             android:id="@+id/tvCategory"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Home"
-            android:layout_toRightOf="@id/cbTask"
             android:layout_alignParentTop="true"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:maxLines="1" />
+            android:layout_toRightOf="@id/cbTask"
+            android:maxLines="1"
+            android:text="Home"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
 
         <TextView
             android:id="@+id/tvDescription"
@@ -34,7 +34,7 @@
             android:ellipsize="end"
             android:maxLines="1"
             android:text="Task description "
-            android:textAppearance="?android:attr/textAppearanceMedium" />
+            android:textAppearance="?android:attr/textAppearanceSmall" />
 
         <TextView
             android:id="@+id/tvDate"
@@ -42,7 +42,8 @@
             android:layout_height="wrap_content"
             android:text="Created: XX/XX/XXXX"
             android:layout_alignParentTop="true"
-            android:layout_toLeftOf="@id/imgOptions"
+            android:layout_toLeftOf="@id/tvPriority"
+            android:paddingRight="10dp"
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:maxLines="1" />
 
@@ -53,15 +54,16 @@
             android:text="Urgent"
             android:layout_alignParentTop="true"
             android:layout_alignParentRight="true"
+            android:paddingRight="10dp"
+            android:paddingLeft="10dp"
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:maxLines="1" />
 
         <ImageView
             android:id="@+id/imgOptions"
-            android:layout_width="?android:attr/listPreferredItemHeight"
+            android:layout_width="wrap_content"
             android:layout_height="?android:attr/listPreferredItemHeight"
             android:layout_alignParentRight="true"
-            android:padding="15sp"
-            android:src="@drawable/task_edit" />
+            android:padding="15dp" />
 
 </RelativeLayout>
