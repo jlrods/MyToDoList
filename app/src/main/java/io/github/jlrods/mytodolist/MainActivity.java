@@ -90,6 +90,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     //Constants
     private static final String groceryCategory = "Groceries";
     private static final String allCategory ="All";
+    private static final int MAX_TASK_LIST_NAME = 11;
 
     private static final int CAMERA_ACCESS_REQUEST = 0;
     private static final int GALLERY_ACCESS_REQUEST = 0;
@@ -927,6 +928,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                             if(newListName.equals("")){
                                 //Display error message via toast
                                 Toast.makeText(MainActivity.this,R.string.listNameEmpty,Toast.LENGTH_SHORT).show();
+                            }else if(newListName.length()>MAX_TASK_LIST_NAME){
+                                Toast.makeText(MainActivity.this,"List name too long. Please select a shorter name.",Toast.LENGTH_SHORT).show();
                             }else{
                                 //Check the name is not already in the categories list
                                 Cursor c = db.runQuery("SELECT * FROM CATEGORY");

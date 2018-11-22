@@ -36,8 +36,11 @@
                 android:layout_height="match_parent"
                 android:layout_below="@id/imgListIcon"
                 android:layout_gravity="center"
+                android:autoSizeTextType="uniform"
                 android:layout_weight="1"
-                android:text="Groceries"
+                android:text="TestNewLongListName12"
+                android:autoSizeMinTextSize="9dp"
+                android:autoSizeMaxTextSize="16dp"
                 android:textAlignment="center" />
         </LinearLayout>
 
