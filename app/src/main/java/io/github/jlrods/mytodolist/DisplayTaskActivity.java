@@ -86,11 +86,13 @@ public abstract class DisplayTaskActivity extends AppCompatActivity implements D
                     }//End of onCheckedChanged method
                 }//End of onCheckedchangeListener method
         );// End of setonCheckedChagnedListener
+        //Declare int variable to define spinner selected item based on the current category
+        int spinnerPosition;
         //Continue with view objects initialization
         this.layoutNotes = findViewById(R.id.layoutNotes);
         //Declare and initialize empty strings to work with different sql queries during the method
         String sql = "";
-        String table="";
+        //String table="";
         //Declare two spinner adapters, one for the category spinner and one for the priority spinner
         SpinnerAdapter adapterCategory;
         SpinnerAdapter adapterPriority;
@@ -169,6 +171,7 @@ public abstract class DisplayTaskActivity extends AppCompatActivity implements D
                 }
             });//End of the onClickListener for the hour logo view
             this.etNotes = findViewById(R.id.etNotes);
+
         }//End of if else statement to check current category when the add task button was pressed
         //Run a a sql query to retrieve the category data. This will vary depending on the current category where add button was pressed from
         cCategory = MainActivity.db.runQuery(sql);
@@ -176,6 +179,16 @@ public abstract class DisplayTaskActivity extends AppCompatActivity implements D
         adapterCategory = new SpinnerAdapter(this,cCategory, CursorAdapter.FLAG_REGISTER_CONTENT_OBSERVER);
         //Set the adapter for the Category spinner
         spCategory.setAdapter(adapterCategory);
+        //Move the spinner adapter position to the correct category depending on the current category
+        //If current category is All or groceries Categories, then leave the position to be the initial one (Home for Tasks and Meats for groceries)
+        if(extras.getString("category").equals(MainActivity.getAllCategory()) || extras.getString("category").equals(MainActivity.getGroceryCategory())) {
+            spinnerPosition = 0;
+        }else{
+            //For any other Category, use findItemPosition method from the spinner adapter by passing the category name as paramters
+            spinnerPosition = adapterCategory.findItemPosition(extras.getString("category"));
+        }//End of if else statement to check the current category name
+        //Move adapater position to the postion indicated as per previous logic
+        spCategory.setSelection(spinnerPosition);
         Log.d("Ext_onCreateDisp","Exit onCreate method in the DisplayTaskActivity abstract class.");
     }//End of onCreate method
 

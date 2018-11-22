@@ -33,10 +33,10 @@ public class EditTaskActivity extends DisplayTaskActivity {
                 Grocery grocery = MainActivity.db.extractGrocery(cItem);
                 this.etDescription.setText(grocery.getDescription());
                 //this.cCategory.moveToPosition(grocery.getType().getId());
-                this.spCategory.setSelection(grocery.getType().getId()-1);
                 adapterCategory = new SpinnerAdapter(this,cCategory, CursorAdapter.FLAG_REGISTER_CONTENT_OBSERVER);
                 //Set the adapter for the Category spinner
                 spCategory.setAdapter(adapterCategory);
+                this.spCategory.setSelection(grocery.getType().getId()-1);
             }//End of if statement to check the cursor is not null or empty
         }else{
             //Retrieve the grocery with id passed via extras
