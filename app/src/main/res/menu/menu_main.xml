@@ -16,6 +16,12 @@
         android:orderInCategory="200"
         app:showAsAction="always"/>
     <item
+        android:id="@+id/archive"
+        android:icon="@android:drawable/ic_menu_set_as"
+        android:orderInCategory="200"
+        android:title="Archive"
+        app:showAsAction="ifRoom" />
+    <item
         android:id="@+id/about"
         android:orderInCategory="300"
         android:icon="@android:drawable/ic_menu_info_details"
