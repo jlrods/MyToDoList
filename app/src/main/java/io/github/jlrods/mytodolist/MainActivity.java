@@ -8,42 +8,37 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Color;
-import android.media.Image;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.EventLogTags;
 import android.util.Log;
 import android.util.SparseBooleanArray;
-import android.view.SubMenu;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.RadioGroup;
+import android.widget.ImageView;;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import java.net.URI;
 import java.util.ArrayList;
+import java.util.Calendar;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener{
     //Define global variables and constants
@@ -85,12 +80,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private static String doneColor ="green";
     private static String doneHighlighter = "#FF4081";
     private static String whiteBackground ="#FAFAFA";
-    private static String dateFormat ="MMM dd yyyy";
-    private static int indexToGetLastTaskListItem =2;
+    private static String dateFormat ="MMM dd yyyy"; 
+    private static boolean isArchivedSelected = false;
+    private enum sortOrientation {DESC,ASC}
+    private sortOrientation orientation = sortOrientation.DESC;
     //Constants
-    private static final String groceryCategory = "Groceries";
-    private static final String allCategory ="All";
-
+    private static int INDEX_TO_GET_LAST_TASK_LIST_ITEM = 3;
+    private static final String groceryCategory = "Groceries";//Const Name should go in capital letters
+    private static final String allCategory ="All"; //Const Name should go in capital letters
+    private static final int MAX_TASK_LIST_NAME = 11;
     private static final int CAMERA_ACCESS_REQUEST = 0;
     private static final int GALLERY_ACCESS_REQUEST = 0;
     final static int RESULT_PROFILE_IMAGE_CAMERA= 0;
@@ -136,148 +134,77 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         //Populate the list of selected grocery types
         selectedTypesListPosition = this.findSelectedTypesPosition();
 
-        //Instantiate variables to handle the MainActivity UI icons (List selected, actions: highligh, filter)
+        //Instantiate variables to handle the MainActivity UI icons (List selected, actions: highlight, filter)
         this.tvCurrentList = this.findViewById(R.id.tvCurrentList);
         this.tvCurrentList.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                getFullListNoFilter();
+                //Check the Archived task list is not selected, if it is no action will be performed
+                if(!isArchivedSelected){
+                    getFullListNoFilter();
+                }//End of if statement
             }
-        });
+        });//End of setOnClickListener method
         this.imgCurrentList = this.findViewById(R.id.imgListIcon);
         this.imgCurrentList.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                getFullListNoFilter();
+                //Check the Archived task list is not selected, if it is no action will be performed
+                if(!isArchivedSelected){
+                    getFullListNoFilter();
+                }//End of if statement
             }
-        });
+        });//End of setOnClickListener method
         this.tvOnlyChecked = this.findViewById(R.id.tvOnlyChecked);
         this.tvHighlightFilter = this.findViewById(R.id.tvHighlightFilter);
         this.imgHighlightFilter = this.findViewById(R.id.imgHighlightFilter);
         this.imgHighlightFilter.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //Check the current category matches the Groceries category
-                if(!currentCategory.getName().equals(groceryCategory)){
-                    //Call method to highlight the selected tasks
-                    highlightSelectedTask();
-                }else{
-                    //Call method to filter by grocery type
-                    filterByType();
-                }//End of if else statement to check the current category
+                //Check the Archived task list is not selected, if it is call the method for sorting archived tasks
+                if(isArchivedSelected){
+                    //Call method to sort archived task
+                    sortArchivedTasks();
+                }else {
+                    //Otherwise, check the current category matches the Groceries category
+                    if (!currentCategory.getName().equals(groceryCategory)) {
+                        //Call method to highlight the selected tasks
+                        highlightSelectedTask();
+                    } else {
+                        //Call method to filter by grocery type
+                        filterByType();
+                    }//End of if else statement to check the current category
+                }//End of if else statement to check the isArchivedSelected state
             }//End of onClick method
         });//End of setOnclickListener method
         this.tvHighlightFilter.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //Check the current category matches the Groceries category
-                if(!currentCategory.getName().equals(groceryCategory)){
-                    //Call method to highlight the selected tasks
-                    highlightSelectedTask();
-                }else{
-                    //Call method to filter by grocery type
-                    filterByType();
-                }//End of if else statement to check the current category
+                //Check the Archived task list is not selected, if it is call the method for sorting archived tasks
+                if(isArchivedSelected){
+                    //Call method to sort archived task
+                    sortArchivedTasks();
+                }else {
+                    //Check the current category matches the Groceries category
+                    if (!currentCategory.getName().equals(groceryCategory)) {
+                        //Call method to highlight the selected tasks
+                        highlightSelectedTask();
+                    } else {
+                        //Call method to filter by grocery type
+                        filterByType();
+                    }//End of if else statement to check the current category
+                }//End of if else statement to check the isArchivedSelected state
             }
-        });
+        });// End of setOnClickListener method
 
         //Check if current category is the Groceries cat  egory (this one requires different treatment)
         if(currentCategory.equals(findCategoryByName(groceryCategory))){
             //If it tis the groceries category, first save the id to select the correct item in the Nav menu
             categoryMenuItemId = R.id.nav_grocery;
+            //Call method that will set up the grocery adapter into the recyclerView
             this.setGroceryAdapter();
-            //Declare and instantiate an empty string to hold the sql query for updating the Recycler viewer
-            /*String sql ="";
-            //Check if the selectedTypes list is not empty. If that is the case, change the filter background color to the accent color
-            if(this.selectedTypes.size()>0){
-                tvHighlightFilter.setTextColor(getResources().getColor(R.color.colorAccent));
-                //Call method to dynamically depending on the grocery types selected
-                sql = listGroceriesFiltered();
-            }else{
-                //Otherwise, select everything from GROCERIES table ordered by type
-                //sql ="SELECT * FROM GROCERIES ORDER BY TypeOfGrocery ASC";
-                sql =getSQLForRecyclerView();
-            }// End of if else statement
-            //Update cursor data by querying database
-            cursor = db.runQuery(sql);
-            //Move to first row in cursor (if any)
-            cursor.moveToFirst();*/
-            /*this.cursor = null;
-            //Instantiate the groceryAdapter for first time, pass in MainActivity context, current DB manager class and the cursor with grocery data
-            groceryAdapter = new GroceryAdapter(this,db,cursor);
-            groceryAdapter.setOnItemClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    int adapterPosition = recyclerView.getChildAdapterPosition(v);
-                    //move the cursor to the task position in the adapter
-                    cursor.moveToPosition(adapterPosition);
-                    //Extract the task object from the cursor row
-                    Grocery grocery = db.extractGrocery(cursor);
-                    throwEditTaskActivity(grocery.getId());
-                }//End of onClick method
-            });//End of OnSetItemClickListener method
-            //Set the onCheckedChangedListener for the groceryAdapter
-            groceryAdapter.setOnItemCheckedChangeListener(new CheckBox.OnCheckedChangeListener() {
-                @Override
-                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                    //Find the position in the adapter  of parent recyclerView item where the selected checkbox is and store it in an int variable
-                    int adapterPosition = recyclerView.getChildAdapterPosition((View) buttonView.getParent());
-                    //Move the cursor to the task position in the adapter
-                    cursor.moveToPosition(adapterPosition);
-                    //Extract the grocery object from the cursor row
-                    Grocery grocery = db.extractGrocery(cursor);
-                    //Check the current task isSelected attribute has changed or not
-                    if(grocery.isSelected()!=isChecked){
-                        //Update the isSelected list within the grocery adapter used to track the actual isSelected status of each task
-                        groceryAdapter.updateItemIsSelected(adapterPosition,isChecked);
-                        //Declare and initialize a string to hold the sql query to update the cursor
-                        String sql=getSQLForRecyclerView();
-                        //Update database with the isSelected attribute of current grocery which checkbox was toggled
-                        db.updateBoolAttribute(currentCategory.getName().toString(),"IsSelected",grocery.getId(),isChecked);
-                        //Call method to update the adapter and the recyclerView
-                        updateRecyclerViewData(sql);
-                    }// End of if statement to check the current task actually changed isSelected stated (otherwise is the recyclerview recycling a  View)
-                }//End of onCheckedChanged method
-            });//End of setOnItemCheckedChangeListner
-            this.recyclerView.setAdapter(groceryAdapter);*/
         }else{
-            /*this.cursor = null;
-            this.taskAdapter = new TaskAdapter(this,db,cursor);
-            this.taskAdapter.setOnItemClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    int adapterPosition = recyclerView.getChildAdapterPosition(v);
-                    //move the cursor to the task position in the adapter
-                    cursor.moveToPosition(adapterPosition);
-                    //Extract the task object from the cursor row
-                    Task task = db.extractTask(cursor);
-                    throwEditTaskActivity(task.getId());
-                }//End of onClick method
-            });//End of OnSetItemClickListener method
-            //Set up onCheckedChangeListener handler for the task items
-            this.taskAdapter.setOnItemCheckedChangeListener(new CheckBox.OnCheckedChangeListener() {
-                @Override
-                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                    //Find the position of parent recyclerview item in the adapter and store it in an int variable
-                    int adapterPosition = recyclerView.getChildAdapterPosition((View) buttonView.getParent());
-                    //move the cursor to the task position in the adapter
-                    cursor.moveToPosition(adapterPosition);
-                    //Extract the task object from the cursor row
-                    Task task = db.extractTask(cursor);
-                    //Check the current task isSelected attribute has changed or not
-                    if(task.isSelected()!=isChecked){
-                        //Update the isSelected list within the adapter used to track the actua isSelected status of each task
-                        taskAdapter.updateItemIsSelected(adapterPosition,isChecked);
-                        //Declare and initialize a string to hold the sql query to update the cursor
-                        String sql= getSQLForRecyclerView();
-                        //Update the isSelected attribute (un)checked task
-                        db.updateBoolAttribute(currentCategory.getName().toString(),"IsSelected",task.getId(),isChecked);
-                        //Call method to update the adapter and the recyclerView
-                        updateRecyclerViewData(sql);
-                    }//End of if statement to check the current task actually changed isSelected stated (otherwise is the recyclerview recycling a  View)
-                }//End of onCheckedChanged method
-            });//End of setOnCheckedChangeListener method
-            this.recyclerView.setAdapter(taskAdapter);*/
+            //Otherwise, call method that will set up the task adapter into the recyclerView
             this.setTaskAdapter();
             //Check the current category is the All category
             if(currentCategory.equals(findCategoryByName(allCategory))){
@@ -288,52 +215,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 categoryMenuItemId = currentCategory.getId();
             }//End of if else statement to check the current category is the All Category
         }// End of if else statement that checks the current category is Groceries Category
-
+        //Set up the layout manager and the recyclerView
         this.layoutManager = new LinearLayoutManager(this);
         this.recyclerView.setLayoutManager(layoutManager);
+        //Update the data set for the recyclerView
         updateRecyclerViewData(this.getSQLForRecyclerView());
-        /*if(!isChecked){
-            updateRecyclerViewData(this.getSQLForRecyclerView());
-        }else {
-            this.cursor = null;
-            this.taskAdapter = new TaskAdapter(this,db,cursor);
-            this.taskAdapter.setOnItemClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    int adapterPosition = recyclerView.getChildAdapterPosition(v);
-                    //move the cursor to the task position in the adapter
-                    cursor.moveToPosition(adapterPosition);
-                    //Extract the task object from the cursor row
-                    Task task = db.extractTask(cursor);
-                    throwEditTaskActivity(task.getId());
-                }//End of onClick method
-            });//End of OnSetItemClickListener method
-            //Set up onCheckedChangeListener handler for the task items
-            this.taskAdapter.setOnItemCheckedChangeListener(new CheckBox.OnCheckedChangeListener() {
-                @Override
-                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                    //Find the position of parent recyclerview item in the adapter and store it in an int variable
-                    int adapterPosition = recyclerView.getChildAdapterPosition((View) buttonView.getParent());
-                    //move the cursor to the task position in the adapter
-                    cursor.moveToPosition(adapterPosition);
-                    //Extract the task object from the cursor row
-                    Task task = db.extractTask(cursor);
-                    //Check the current task isSelected attribute has changed or not
-                    if(task.isSelected()!=isChecked){
-                        //Update the isSelected list within the adapter used to track the actua isSelected status of each task
-                        taskAdapter.updateItemIsSelected(adapterPosition,isChecked);
-                        //Declare and initialize a string to hold the sql query to update the cursor
-                        String sql= getSQLForRecyclerView();
-                        //Update the isSelected attribute (un)checked task
-                        db.updateBoolAttribute(currentCategory.getName().toString(),"IsSelected",task.getId(),isChecked);
-                        //Call method to update the adapter and the recyclerView
-                        updateRecyclerViewData(sql);
-                    }//End of if statement to check the current task actually changed isSelected stated (otherwise is the recyclerview recycling a  View)
-                }//End of onCheckedChanged method
-            });//End of setOnCheckedChangeListener method
-            this.cbOnlyChecked.setChecked(isChecked);
-        }*/
-
+        //Set the onCheckedChagne listener for the glogal check box filter
         this.cbOnlyChecked.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -346,8 +233,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             }//End of listener
         });//End of setOncheckedChangeListener method
 
-        //Check the currentCategory selected and display the proper name
-        //this.tvCurrentList.setText(this.currentCategory.getName().toString());
         //Update the top menu text and images
         this.updateTopMenuUI();
 
@@ -363,12 +248,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                //Call method to throw the Add tas Activity
                 throwAddTaskActivity(null);
-                /*Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();*/
             }//End of onClick method for the floating button
         });//End of setOnClickListener method
-
         //Side Navigation Menu set up
         drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -516,14 +399,16 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             String condition1 = ""; //To be used for the search filter
             String and =" AND ";
             String condition2 ="";// To be used for the only checked items filter
-            String condition3 = "";// To be used for specific categories other that all and groceries categories
+            String condition3 = "";// To be used for specific categories other that all and groceries category
+            String isNotArchived = "  IsArchived = 0 ";
             String orderBy = " ORDER BY ";
             String column1 = " Description ";
             String column2 = " Category ";
             String direction =" ASC";
             int i =0;// integer to define position to search text in the lastSearchText String array
+            boolean isGrocery = currentCategory.equals(findCategoryByName(groceryCategory));
             //Check if current category is the groceries category
-            if(currentCategory.equals(findCategoryByName(groceryCategory))){
+            if(isGrocery){
                 //If that is the case, do some changes for this specific category
                 table = "GROCERIES";
                 i=1;
@@ -547,10 +432,16 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             //Logic to build the sql query dynamically based on the different category and filters
             //Check the three conditions are empty
             if(condition1.equals("")&& condition2.equals("") && condition3.equals("")){
-                //If they are empty, the sql must not contain any condition in it
-                sql = select+table+orderBy+column2+direction;
+                if(isGrocery){
+                    //If they are empty, the sql must not contain any condition in it
+                    sql = select+table+orderBy+column2+direction;
+                }else{
+                    //If they are empty, the sql must not contain any condition in it
+                    sql = select+table+where+isNotArchived+orderBy+column2+direction;
+                }
+
             }else{
-                //Otherwise, check the differnt combinations of conditions
+                //Otherwise, check the different combinations of conditions
                 //If the third condition is blank, means it is not a specific task (It is either All or Groceries)
                 if(condition3.equals("")){
                     //column2 = "_id";
@@ -559,38 +450,78 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                         //In that case, check if condition2 is not empty either, which means more than one condition is required
                         //As per current code, this option will never be used, however is left here intentionally in case is needed in future
                         if(!condition2.equals("")){
-                            sql = select+table+where+condition1+and+condition2+orderBy+column2+direction;
+                            if(isGrocery){
+                                //If they are empty, the sql must not contain any condition in it
+                                sql = select+table+where+condition1+and+condition2+orderBy+column2+direction;
+                            }else{
+                                //If they are empty, the sql must not contain any condition in it
+                                sql = select+table+where+isNotArchived+and+condition1+and+condition2+orderBy+column2+direction;
+                            }
+
                         }else{
-                            //if it doesn't have the and word, means only the condition 1 is applied
-                            sql = select+table+where+condition1+orderBy+column2+direction;
+                            if(isGrocery){
+                                //if it doesn't have the and word, means only the condition 1 is applied
+                                sql = select+table+where+condition1+orderBy+column2+direction;
+                            }else{
+                                //if it doesn't have the and word, means only the condition 1 is applied
+                                sql = select+table+where+isNotArchived+and+condition1+orderBy+column2+direction;
+                            }
+
                         }//End of if else statement to check condition1 is not empty and condition2 is not empty
                         //If condition1 is blank, check the condition2 is not empty
                     }else if(!condition2.equals("")){
-                        //If the condition1 is blank, means no search filter is applied and the checked only items is the only filter applied
-                        sql = select+table+where+condition2+orderBy+column2+direction;
-                    }/*else{
-                        //If condition2 is empty too, no co
-                        sql = select+table+where+condition3;
-                    }*/
+                        if(isGrocery){
+                            //If the condition1 is blank, means no search filter is applied and the checked only items is the only filter applied
+                            sql = select+table+where+condition2+orderBy+column2+direction;
+                        }else{
+                            //If the condition1 is blank, means no search filter is applied and the checked only items is the only filter applied
+                            sql = select+table+where+isNotArchived+and+condition2+orderBy+column2+direction;
+                        }
+
+                    }
                     //If condition3 is not empty, a specific category filter must be required
                 }else{
                     //Check condition1 is not empty (at least two conditions required)
                     if(!condition1.equals("")){
                         //Include condition1 and condition3 in the sql query
                         if(!condition2.equals("")){
-                            //SQL for three filters applied
-                            sql = select+table+condition1+and+condition2+and+condition3+orderBy+column2+direction;
+                            if(isGrocery){
+                                //SQL for three filters applied
+                                sql = select+table+where+condition1+and+condition2+and+condition3+orderBy+column2+direction;
+                            }else{
+                                //SQL for three filters applied
+                                sql = select+table+where+isNotArchived+and+condition1+and+condition2+and+condition3+orderBy+column2+direction;
+                            }
+
                         }else{
-                            //otherwise, only condition 1 and 3 applied
-                            sql = select+table+where+condition1+and+condition3+orderBy+column2+direction;
+                            if(isGrocery){
+                                //otherwise, only condition 1 and 3 applied
+                                sql = select+table+where+condition1+and+condition3+orderBy+column2+direction;
+                            }else{
+                                //otherwise, only condition 1 and 3 applied
+                                sql = select+table+where+isNotArchived+and+condition1+and+condition3+orderBy+column2+direction;
+                            }
+
                         }//End of if else statement to chec condition 2 is empty
                         //If condition1 is empty, check condition2
                     }else if(!condition2.equals("")) {
-                        //This means only condition 2 and 3 will be required in the sql query
-                        sql = select+table+where+condition2+and+condition3+orderBy+column2+direction;
+                        if(isGrocery){
+                            //This means only condition 2 and 3 will be required in the sql query
+                            sql = select+table+where+condition2+and+condition3+orderBy+column2+direction;
+                        }else{
+                            //This means only condition 2 and 3 will be required in the sql query
+                            sql = select+table+where+isNotArchived+and+condition2+and+condition3+orderBy+column2+direction;
+                        }
+
                     }else{
-                        //Finally, query if only condition 3 is required (specific category filter)
-                        sql = select+table+where+condition3+orderBy+column2+direction;
+                        if(isGrocery){
+                            //Finally, query if only condition 3 is required (specific category filter)
+                            sql = select+table+where+condition3+orderBy+column2+direction;
+                        }else{
+                            //Finally, query if only condition 3 is required (specific category filter)
+                            sql = select+table+where+isNotArchived+and+condition3+orderBy+column2+direction;
+                        }
+
                     }//End of if else statement to check condition1 and 2 are not empty
                 }//End of if else statement to check condition3 is empty
             }//End if else statement to check three conditions are empty
@@ -604,7 +535,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         Log.d("Ent_UpdateNaveMenu","Enter the updateNavMenu method in MainActivity class.");
         //Declare and initialize a string to get category list from DB
         String sql = "";
-        if(navMenu.size()>indexToGetLastTaskListItem+1){
+        if(navMenu.size()>INDEX_TO_GET_LAST_TASK_LIST_ITEM+1){
             //Initialize a string to get the Category with MAX id from category list (The last category added into DB)
             sql = "SELECT * FROM CATEGORY  WHERE _id= (SELECT MAX(_id) FROM CATEGORY)";
 
@@ -613,18 +544,16 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             sql = "SELECT * FROM CATEGORY WHERE _id NOT IN("+findCategoryByName(allCategory).getId()+", "+findCategoryByName(groceryCategory).getId()+")";
             //Make the All Category the default selected item
             navMenu.getItem(0).setChecked(true);
-        }
+        }//End of if else statement to check the nav menu size is greater than the number of pre-existent menu items
         //Declare and initialize a cursor object to retrieve the list task categories in the DB
         Cursor c = db.runQuery(sql);
         int order =0;
-        //Last menu item
-        //MenuItem lastItem = navMenu.getItem(navMenu.size()-1);
         //While loop to iterate through the cursor and include the item in the Task list menu
         while(c.moveToNext()){
-            order = navMenu.getItem(navMenu.size()-indexToGetLastTaskListItem).getOrder()+1;
+            order = navMenu.getItem(navMenu.size()-INDEX_TO_GET_LAST_TASK_LIST_ITEM).getOrder()+1;
             //MenuItem previousItem = navMenu.getItem(navMenu.size()-1)
             navMenu.add(R.id.categoryListMenu,c.getInt(0),order,c.getString(1));
-            MenuItem newItem = navMenu.getItem(navMenu.size()-indexToGetLastTaskListItem);
+            MenuItem newItem = navMenu.getItem(navMenu.size()-INDEX_TO_GET_LAST_TASK_LIST_ITEM);
             newItem.setIcon(R.drawable.list_icon);
         }//End of while loop
         Log.d("Ext_UpdateNaveMenu","Exit the updateNavMenu method in MainActivity class.");
@@ -634,6 +563,21 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
+        //When menu is invalidated, find the search and archive menu items
+        MenuItem search = menu.findItem(R.id.search);
+        MenuItem archive = menu.findItem(R.id.archive);
+        //Check the Archived task list is active or not
+        if(isArchivedSelected){
+            //If it is active, set search and archive menus to be not visible
+            search.setVisible(false);
+            archive.setVisible(false);
+        }else{
+            //Otherwise, check the current category is the Groceries Category
+            if(currentCategory.equals(findCategoryByName(groceryCategory))){
+                //If that is the case, only the  archive will be hidden
+                archive.setVisible(false);
+            }//End of if statement to check the current category
+        }//End of if else statement to check the isArchiveSelected state
         return true;
     }//End of onCreaeOptionsMenu method
 
@@ -643,7 +587,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             return true;
@@ -652,8 +595,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             return true;
         }else if(id == R.id.delete){
             return this.delete();
+        }else if(id == R.id.archive){
+            return this.archive();
         }
-
         return super.onOptionsItemSelected(item);
     }//End of onOptionsItemSelected method
 
@@ -773,6 +717,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         int id = item.getItemId();
         //Check the item selected on the nav menu
         if (id == R.id.nav_all) {
+            if(this.isArchivedSelected){
+                this.isArchivedSelected = false;
+                FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+                //fab.setEnabled(true);
+                fab.setVisibility(View.VISIBLE);
+            }
             // Handle the the All task list menu option
             //Set the current category to be All
             this.currentCategory = findCategoryByName(allCategory);
@@ -787,52 +737,28 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             //Change background in case previous list was the groceries list (selectedTypes size >0)
             tvHighlightFilter.setTextColor(getResources().getColor(R.color.colorSecondayText));
             if(this.taskAdapter == null){
+                //If the task adapter is null, call method to set up the adapter into the recyclerView
                 this.setTaskAdapter();
-                /*this.taskAdapter = new TaskAdapter(this,db,cursor);
-                this.taskAdapter.setOnItemClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        int adapterPosition = recyclerView.getChildAdapterPosition(v);
-                        //move the cursor to the task position in the adapter
-                        cursor.moveToPosition(adapterPosition);
-                        //Extract the task object from the cursor row
-                        Task task = db.extractTask(cursor);
-                        throwEditTaskActivity(task.getId());
-                    }//End of onClick method
-                });//End of OnSetItemClickListener method
-                //Set up onCheckedChangeListener handler for the task items
-                this.taskAdapter.setOnItemCheckedChangeListener(new CheckBox.OnCheckedChangeListener() {
-                    @Override
-                    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                        //Find the position of parent recyclerview item in the adapter and store it in an int variable
-                        int adapterPosition = recyclerView.getChildAdapterPosition((View) buttonView.getParent());
-                        //move the cursor to the task position in the adapter
-                        cursor.moveToPosition(adapterPosition);
-                        //Extract the task object from the cursor row
-                        Task task = db.extractTask(cursor);
-                        //Check the current task isSelected attribute has changed or not
-                        if(task.isSelected()!=isChecked){
-                            //Update the isSelected list within the adapter used to track the actua isSelected status of each task
-                            taskAdapter.updateItemIsSelected(adapterPosition,isChecked);
-                            //Declare and initialize a string to hold the sql query to update the cursor
-                            String sql= getSQLForRecyclerView();
-                            //Update the isSelected attribute (un)checked task
-                            db.updateBoolAttribute(currentCategory.getName().toString(),"IsSelected",task.getId(),isChecked);
-                            //Call method to update the adapter and the recyclerView
-                            updateRecyclerViewData(sql);
-                        }//End of if statement to check the current task actually changed isSelected stated (otherwise is the recyclerview recycling a  View)
-                    }//End of onCheckedChanged method
-                });//End of setOnCheckedChangeListener method*/
             }else{
+                //Otherwise, set the adapter directly
                 this.recyclerView.setAdapter(taskAdapter);
             }//End of if statement that check the taskAdapter is not null
             //Call method to update the RecyclerView data set and update ui
-            this.updateRecyclerViewData("SELECT * FROM TASK ORDER BY Category ASC");
+            this.updateRecyclerViewData(getSQLForRecyclerView());
+            invalidateOptionsMenu();
             //Update the top menu text and images
             this.updateTopMenuUI();
             this.db.updateAppState(currentCategory.getId(),db.toInt(isSearchFilter),db.toInt(cbOnlyChecked.isChecked()),lastSearchText[0]+"'",lastSearchText[1]+"'");
             drawer.closeDrawer(GravityCompat.START);
         } else if (id == R.id.nav_grocery) {
+            //Check the Archived tasks list is selected or was selected
+            if(this.isArchivedSelected){
+                //If that is the case, set to false, so new category is in use
+                this.isArchivedSelected = false;
+                //Make the fab button visible again, as it was hidden by the Arvhive Task menu
+                FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+                fab.setVisibility(View.VISIBLE);
+            }//End of if statement to check the isArchivedSelected state
             // Handle the the groceries task category list menu option
             if(this.cbOnlyChecked.isChecked()){
                 this.cbOnlyChecked.setChecked(false);
@@ -843,68 +769,16 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             }//End of if statement to check isSearchFilter state
             //Set the current category to be Groceries
             this.currentCategory=findCategoryByName(groceryCategory);
-            /*//Declare and initialize a string to hold the sql query to update the cursor
-            String sql="";
-            //Check if the selectedTypes list is not empty. If that is the case, change the filter background color to the accent color
-            if(this.selectedTypes.size()>0){
-                tvHighlightFilter.setTextColor(getResources().getColor(R.color.colorAccent));
-                //Call method to dynamically depending on the grocery types selected
-                sql = listGroceriesFiltered();
-            }else{
-                //Otherwise, select everything from GROCERIES table ordered by type
-                sql ="SELECT * FROM GROCERIES ORDER BY TypeOfGrocery ASC";
-            }// End of if else statement
-            //Update cursor data by queriying database
-            cursor = db.runQuery(sql);
-            //Move to first row in cursor (if any)
-            cursor.moveToFirst();*/
-            //this.cursor = null;
-            //Instantiate the groceryAdapter for first time, pass in MainActivity context, current DB manager class and the cursor with grocery data
+            //If the grocery adapter is null, call method to set up the adapter into the recyclerView
             if(groceryAdapter == null){
+                //Instantiate the groceryAdapter for first time, pass in MainActivity context, current DB manager class and the cursor with grocery data
                 this.setGroceryAdapter();
-                /*groceryAdapter = new GroceryAdapter(this,db,cursor);
-                groceryAdapter.setOnItemClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        int adapterPosition = recyclerView.getChildAdapterPosition(v);
-                        //move the cursor to the task position in the adapter
-                        cursor.moveToPosition(adapterPosition);
-                        //Extract the task object from the cursor row
-                        Grocery grocery = db.extractGrocery(cursor);
-                        throwEditTaskActivity(grocery.getId());
-                    *//*Intent i = new Intent(MainActivity.this, EditTaskActivity.class);
-                    i.putExtra("id", grocery.getId());
-                    i.putExtra("category",currentCategory.toString());
-                    startActivity(i);*//*
-                    }//End of onClick method
-                });//End of OnSetItemClickListener method
-                //Set the OncheckedChangedListener for the groceryAdapter
-                groceryAdapter.setOnItemCheckedChangeListener(new CheckBox.OnCheckedChangeListener() {
-                    @Override
-                    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                        //Find the position in the adapter  of parent recyclerView item where the selected checkbox is and store it in an int variable
-                        int adapterPosition = recyclerView.getChildAdapterPosition((View) buttonView.getParent());
-                        //Move the cursor to the task position in the adapter
-                        cursor.moveToPosition(adapterPosition);
-                        //Extract the grocery object from the cursor row
-                        Grocery grocery = db.extractGrocery(cursor);
-                        //Check the current task isSelected attribute has changed or not
-                        if(grocery.isSelected()!=isChecked){
-                            //Update the isSelected list within the grocery adapter used to track the actual isSelected status of each task
-                            groceryAdapter.updateItemIsSelected(adapterPosition,isChecked);
-                            //Declare and initialize a string to hold the sql query to update the cursor
-                            String sql=getSQLForRecyclerView();
-                            //Update database with the isSelected attribute of current grocery which checkbox was toggled
-                            db.updateBoolAttribute(currentCategory.getName().toString(),"IsSelected",grocery.getId(),isChecked);
-                            //Call method to update the adapter and the recyclerView
-                            updateRecyclerViewData(sql);
-                        }// End of if statement to check the current task actually changed isSelected stated (otherwise is the recyclerview recycling a  View)
-                    }//End of onCheckedChanged method
-                });//End of setOnItemCheckedChangeListner*/
             }else{
                 //Set the adapter in the global recyclerView
                 this.recyclerView.setAdapter(groceryAdapter);
             }//End of if statement to check the groceryAdapter is null
+            //Invalidate menu setup and set up proper menu items
+            invalidateOptionsMenu();
             //Update the top menu text and images
             this.updateTopMenuUI();
             updateRecyclerViewData(this.getSQLForRecyclerView());
@@ -927,6 +801,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                             if(newListName.equals("")){
                                 //Display error message via toast
                                 Toast.makeText(MainActivity.this,R.string.listNameEmpty,Toast.LENGTH_SHORT).show();
+                            }else if(newListName.length()>MAX_TASK_LIST_NAME){
+                                Toast.makeText(MainActivity.this,"List name too long. Please select a shorter name.",Toast.LENGTH_SHORT).show();
                             }else{
                                 //Check the name is not already in the categories list
                                 Cursor c = db.runQuery("SELECT * FROM CATEGORY");
@@ -960,7 +836,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                                         //Include the new list in the Navigation menu
                                         MainActivity.updateNavMenu(MainActivity.getNavigationView().getMenu());
                                         //Select the new MenuItem and displayed as selected
-                                        navigationView.getMenu().getItem(navigationView.getMenu().size()-indexToGetLastTaskListItem).setCheckable(true).setChecked(true);
+                                        navigationView.getMenu().getItem(navigationView.getMenu().size()-INDEX_TO_GET_LAST_TASK_LIST_ITEM).setCheckable(true).setChecked(true);
                                         Toast.makeText(MainActivity.this,R.string.addListSuccess,Toast.LENGTH_SHORT).show();
                                     }//End of if else statement that check retrieved id is not -1
                                 }//End of if else statement to check the new list name was not found in DB already
@@ -1017,7 +893,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                                         if(deletableCategories[i]){
                                             Category category = findCategoryByName(taskList[i].toString());
                                             categoriesToBeDeleted.add(category);
-                                            //positionsToBeDeleted.add(i+indexToGetLastTaskListItem);
+                                            //positionsToBeDeleted.add(i+INDEX_TO_GET_LAST_TASK_LIST_ITEM);
                                             notEmpty = true;
                                         }///End of for loop to go through the deletableTasks list
                                     }//End of for loop to iterate through the list of Categories
@@ -1102,51 +978,55 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                         .create()
                         .show();
             }//End of if statement to check the cursor is not empty
-        }else{
-            //Any other menu item added programmatically will fall in this section
-            //Get the item id, which matches the Category _id attribute in the DB
-            String sql ="SELECT * FROM CATEGORY WHERE _id NOT IN ("+findCategoryByName(allCategory).getId()+", "+findCategoryByName(groceryCategory).getId()+")";
-            Cursor c = db.runQuery(sql);
-            boolean found = false;
+        }else if(id == R.id.nav_archive){
+            //Set the Archived tasks list to be selected
+            this.isArchivedSelected = true;
+            //Floating button creation and functionality set up (make it invisible)
+            FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+            fab.setVisibility(View.GONE);
+            //If the task adapter is null, call method to set up the adapter into the recyclerView
             if(this.taskAdapter == null){
-                this.taskAdapter = new TaskAdapter(this,db,cursor);
-                this.taskAdapter.setOnItemClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        int adapterPosition = recyclerView.getChildAdapterPosition(v);
-                        //move the cursor to the task position in the adapter
-                        cursor.moveToPosition(adapterPosition);
-                        //Extract the task object from the cursor row
-                        Task task = db.extractTask(cursor);
-                        throwEditTaskActivity(task.getId());
-                    }//End of onClick method
-                });//End of OnSetItemClickListener method
-                //Set up onCheckedChangeListener handler for the task items
-                this.taskAdapter.setOnItemCheckedChangeListener(new CheckBox.OnCheckedChangeListener() {
-                    @Override
-                    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                        //Find the position of parent recyclerview item in the adapter and store it in an int variable
-                        int adapterPosition = recyclerView.getChildAdapterPosition((View) buttonView.getParent());
-                        //move the cursor to the task position in the adapter
-                        cursor.moveToPosition(adapterPosition);
-                        //Extract the task object from the cursor row
-                        Task task = db.extractTask(cursor);
-                        //Check the current task isSelected attribute has changed or not
-                        if(task.isSelected()!=isChecked){
-                            //Update the isSelected list within the adapter used to track the actua isSelected status of each task
-                            taskAdapter.updateItemIsSelected(adapterPosition,isChecked);
-                            //Declare and initialize a string to hold the sql query to update the cursor
-                            String sql= getSQLForRecyclerView();
-                            //Update the isSelected attribute (un)checked task
-                            db.updateBoolAttribute(currentCategory.getName().toString(),"IsSelected",task.getId(),isChecked);
-                            //Call method to update the adapter and the recyclerView
-                            updateRecyclerViewData(sql);
-                        }//End of if statement to check the current task actually changed isSelected stated (otherwise is the recyclerview recycling a  View)
-                    }//End of onCheckedChanged method
-                });//End of setOnCheckedChangeListener method
-            }
-            this.recyclerView.setAdapter(taskAdapter);
+                this.setTaskAdapter();
+            }else{
+                //Otherwise, setup the adapter into the recyclerViuew
+                this.recyclerView.setAdapter(taskAdapter);
+            }//End of if else statement to check the task adapter is null or not
+            //Set the proper string for the sql questy that will retrieve the list of archived tasks only
+            String sql ="SELECT * FROM TASK WHERE IsArchived = 1 ORDER BY DateClosed DESC";
+            //Update data set for the RecyclerView
+            updateRecyclerViewData(sql);
+            //Invalidate menu and set up proper menu items to be visible
+            invalidateOptionsMenu();
+            //Update the top menu to display correct images and menu names
+            this.updateTopMenuUI();
+            //Close the drawer
+            drawer.closeDrawer(GravityCompat.START);
+        }else{
+            //Check the Archived tasks list is selected or was selected
+            if(this.isArchivedSelected){
+                //If that is the case, set to false, so new category is in use
+                this.isArchivedSelected = false;
+                //Make the fab button visible again, as it was hidden by the Arvhive Task menu
+                FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+                fab.setVisibility(View.VISIBLE);
+            }//End of if statement to check the isArchivedSelected state
+
+            //Any other menu item added programmatically will fall in this section
+            //Declare and instantiate a string to hold the sql query that will retrieve all the Category items in the DB except the All and Groceries categories
+            String sql ="SELECT * FROM CATEGORY WHERE _id NOT IN ("+findCategoryByName(allCategory).getId()+", "+findCategoryByName(groceryCategory).getId()+")";
+            //Declare and instantiate a cursor that will hold all the categories coming from the DB
+            Cursor c = db.runQuery(sql);
+            //Declare an initialize a boolean flag to prompt when a specific Category has been found in the Cursor c
+            boolean found = false;
+            //Check
+            if(this.taskAdapter == null){
+               this.setTaskAdapter();
+            }else{
+                this.recyclerView.setAdapter(taskAdapter);
+            }//End of if else statement to check the task adapter is null or not
+            //While loop to iterate through the cursor and find the new current category by passing in the Category id coming from DB, which matches the Menu item id
             while(c.moveToNext() && !found ){
+                //Check the Menu Item id from item selected by user against the _id attribute of items in the cursor
                 if(id == c.getInt(0)){
                     //Set the current category to be All
                     this.currentCategory = findCategoryById(id);
@@ -1156,19 +1036,23 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     }//End of if statement to check the check box state
                     //Change background in case previous list was the groceries list (selectedTypes size >0)
                     tvHighlightFilter.setTextColor(getResources().getColor(R.color.colorSecondayText));
+                    //Reset main menu and display items properly
+                    invalidateOptionsMenu();
+                    //Update the Top menu images and texts
                     this.updateTopMenuUI();
-                    //MenuItem item = navigationView.getMenu().getItem(id);
+                    //Set the selected item as checkable and set it to check on the Navigation Menu, so it can be highlighted on the UI
                     item.setCheckable(true);
                     item.setChecked(true);
+                    //Set the booblean flag to true to exit the loop
                     found = true;
                 }//End of if statement to extract data from cursor
             }//End of while loop to iterate through the cursor
             //Call method to update the RecyclerView data set and update ui
-            this.updateRecyclerViewData("SELECT * FROM TASK WHERE Category = "+id+" ORDER BY _id");
+            this.updateRecyclerViewData("SELECT * FROM TASK WHERE Category = "+id+" AND IsArchived = 0 ORDER BY _id");
+            //Save the App state in the DB
             this.db.updateAppState(currentCategory.getId(),db.toInt(isSearchFilter),db.toInt(cbOnlyChecked.isChecked()),lastSearchText[0]+"'",lastSearchText[1]+"'");
+            //Close the Navigation Menu drawer
             drawer.closeDrawer(GravityCompat.START);
-            /*DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-            drawer.closeDrawer(GravityCompat.START);*/
         }//End of if else statement chain to check menu option that has been selected
 
         Log.d("Ext_onNavigationSel","Exit onNavigationItemSelected method in MainActivity class.");
@@ -1182,7 +1066,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         //Move to first row of cursor if not empty
         cursor.moveToFirst();
         //Check what type of adapter has to be used TaskAdapter or GroceryAdapter
-        if(currentCategory.equals(findCategoryByName(groceryCategory))){
+        if(currentCategory.equals(findCategoryByName(groceryCategory))&& !isArchivedSelected){
             //Refresh the new data set on the grocery adapter
             groceryAdapter.setCursor(cursor);
             groceryAdapter.notifyDataSetChanged();
@@ -1301,31 +1185,64 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     //Method to update MainActivity UI top menu (No  the action bar)
     public void updateTopMenuUI(){
         Log.d("Ent_updateUIMA","Enter updateTopeMenuUI in MainActivity class.");
-        //Get the current category name and store it in a String variable
-        String currentCategoryName = this.currentCategory.getName();
-        this.tvOnlyChecked.setText(R.string.checked);
-        //Check current category and select the correct actions to update the top menu
-        if(currentCategoryName.toLowerCase().equals(groceryCategory.toLowerCase())){
-            //this.tvOnlyChecked.setText(R.string.checkedGrocery);
-            this.imgCurrentList.setImageResource(R.drawable.groceries_icon);
-            this.imgHighlightFilter.setImageResource(R.drawable.filter_icon);
-            this.tvHighlightFilter.setText(R.string.filterByType);
-            //Check the type filter is applied, if that is the case, change text color
-            if(selectedTypes.size()>0){
-                tvHighlightFilter.setTextColor(getResources().getColor(R.color.colorAccent));
-            }//End of if statement to check the type filter is applied
+        //Check the Archive menu was selected before the UI update
+        if(this.isArchivedSelected){
+            //If that is the case, set the archive image
+            this.imgCurrentList.setImageResource(R.drawable.archive_icon);
+            //Set the archive text
+            this.tvCurrentList.setText("Archive");
+            //Change color of icon for archive list
+            Drawable drawable = getResources().getDrawable(android.R.drawable.ic_menu_sort_by_size);
+            drawable = DrawableCompat.wrap(drawable);
+            DrawableCompat.setTint(drawable,Color.BLACK);
+            //Set the image in the imageView
+            this.imgHighlightFilter.setImageDrawable(drawable);
+            //Toggle text for the sort orientation, based ont he current orientation
+            switch(orientation){
+                //If it it Descending order, change to ascending
+                case DESC:
+                    this.tvHighlightFilter.setText(sortOrientation.DESC.toString());
+                    break;
+                //If it is ascending, change it to descending
+                case ASC:
+                    this.tvHighlightFilter.setText(sortOrientation.ASC.toString());
+                    break;
+            }//End of switch statement
+            //this.tvHighlightFilter.setText("DESC");
+            this.cbOnlyChecked.setVisibility(View.GONE);
+            this.tvOnlyChecked.setVisibility(View.GONE);
         }else{
-            //For all other task lists
-            this.imgHighlightFilter.setImageResource(R.drawable.done_icon);
-            this.tvHighlightFilter.setText(R.string.markDone);
-            if(currentCategoryName.toLowerCase().equals(allCategory.toLowerCase())){
-                this.imgCurrentList.setImageResource(R.drawable.all_icon);
+            this.cbOnlyChecked.setVisibility(View.VISIBLE);
+            this.tvOnlyChecked.setVisibility(View.VISIBLE);
+            //this.imgHighlightFilter.setVisibility(View.VISIBLE);
+            //this.tvHighlightFilter.setVisibility(View.VISIBLE);
+            //Get the current category name and store it in a String variable
+            String currentCategoryName = this.currentCategory.getName();
+            this.tvOnlyChecked.setText(R.string.checked);
+            //Check current category and select the correct actions to update the top menu
+            if(currentCategoryName.toLowerCase().equals(groceryCategory.toLowerCase())){
+                //this.tvOnlyChecked.setText(R.string.checkedGrocery);
+                this.imgCurrentList.setImageResource(R.drawable.groceries_icon);
+                this.imgHighlightFilter.setImageResource(R.drawable.filter_icon);
+                this.tvHighlightFilter.setText(R.string.filterByType);
+                //Check the type filter is applied, if that is the case, change text color
+                if(selectedTypes.size()>0){
+                    tvHighlightFilter.setTextColor(getResources().getColor(R.color.colorAccent));
+                }//End of if statement to check the type filter is applied
             }else{
-                this.imgCurrentList.setImageResource(R.drawable.list_icon);
-            }//End of if else statement to check the current task list is the all category
-        }//End of if else statement to check the current category name
-        //Display the proper name
-        this.tvCurrentList.setText(this.currentCategory.getName().toString());
+                //For all other task lists
+                this.imgHighlightFilter.setImageResource(R.drawable.done_icon);
+                this.tvHighlightFilter.setText(R.string.markDone);
+                if(currentCategoryName.toLowerCase().equals(allCategory.toLowerCase())){
+                    this.imgCurrentList.setImageResource(R.drawable.all_icon);
+                }else{
+                    this.imgCurrentList.setImageResource(R.drawable.list_icon);
+                }//End of if else statement to check the current task list is the all category
+            }//End of if else statement to check the current category name
+            //Display the proper name
+            this.tvCurrentList.setText(this.currentCategory.getName().toString());
+        }//End of if else statement to check the isArchiveSelected
+
         Log.d("Ext_updateUIMA","Exit updateTopeMenuUI in MainActivity class.");
     }//End of updateTopMenuUI method
 
@@ -1587,14 +1504,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     //Method to delete a task or a grocery
     private boolean delete(){
         Log.d("Ent_delete","Enter delete method in the MainActivity class.");
-        //Declare and instantiate a boolean  varuable which will return if the delete method was successful or not
+        //Declare and instantiate a boolean  variable which will return if the delete method was successful or not
         boolean result = false;
         //Declare a cursor object to query the database and hold the data
         final Cursor c;
         //Declare a String object to hold the message to be displayed on the  dialog box that will prompt the user the tasks or groceries to be deleted
         String dialogMessage;
         //Check current property (is it groceries or any other?)
-        if(currentCategory.equals(findCategoryByName(getGroceryCategory()))){
+        if(currentCategory.equals(findCategoryByName(getGroceryCategory())) && !isArchivedSelected){
             //if the current category is the Groceries
             //Run query to filter all the selected items in the Groceries table
             c= db.runQuery("SELECT * FROM GROCERIES WHERE isSelected = 1 ORDER BY TypeOfGrocery ASC");
@@ -1651,14 +1568,18 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             //For any other category
             //Declare and initialize an empty string object to hold the sql query that will be run to retrive data from database. Depending on current category different sql query will be required
             String sql ="";
-            //Check if the current category is All tasks or a specific category has been selected
-            if(currentCategory.equals(findCategoryByName(allCategory))){
-                //Define sql query that includes all the categories
-                sql = "SELECT * FROM TASK WHERE isSelected = 1 ORDER BY Category ASC" ;
+            if(isArchivedSelected){
+                sql = "SELECT * FROM TASK WHERE IsSelected = 1 AND IsArchived = 1 ORDER BY DateClosed "+ tvHighlightFilter.getText().toString();
             }else{
-                //Define a sql query for a specific category. Category id comes from the current category object
-                sql = "SELECT * FROM TASK WHERE isSelected = 1 AND Category = "+ currentCategory.getId();
-            }//End of if else statement
+                //Check if the current category is All tasks or a specific category has been selected
+                if(currentCategory.equals(findCategoryByName(allCategory))){
+                    //Define sql query that includes all the categories
+                    sql = "SELECT * FROM TASK WHERE IsSelected = 1 AND IsArchived = 0 ORDER BY Category ASC" ;
+                }else{
+                    //Define a sql query for a specific category. Category id comes from the current category object
+                    sql = "SELECT * FROM TASK WHERE IsSelected = 1 AND IsArchived = 0 AND Category = "+ currentCategory.getId();
+                }//End of if else statement
+            }
             //Retrieve data from DB by running sql query defined above
             c= db.runQuery(sql);
             //Initialize the dialogMessage string to be empty
@@ -1700,13 +1621,17 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                                 }while(c.moveToNext());//End of while loop to delete the selected groceries
                                 //Declare and instantiate as null a string object to hold the sql query to run. Depending on the current category, different query will be run
                                 String sql="";
-                                //Check the current category to delete the tasks from
-                                if(currentCategory.equals(findCategoryByName(allCategory))){
-                                    //Define a sql for all the task categories
-                                    sql = "SELECT * FROM TASK ORDER BY Category ASC";
+                                if(isArchivedSelected){
+                                    sql = "SELECT * FROM TASK WHERE IsArchived = 1 ORDER BY DateClosed "+ tvHighlightFilter.getText().toString();
                                 }else{
-                                    //Define a sql query for specific category, coming from the current category id
-                                    sql = "SELECT * FROM TASK WHERE Category = "+currentCategory.getId()+ " ORDER BY Category ASC";
+                                    //Check if the current category is All tasks or a specific category has been selected
+                                    if(currentCategory.equals(findCategoryByName(allCategory))){
+                                        //Define sql query that includes all the categories
+                                        sql = "SELECT * FROM TASK WHERE IsArchived = 0 ORDER BY Category ASC" ;
+                                    }else{
+                                        //Define a sql query for a specific category. Category id comes from the current category object
+                                        sql = "SELECT * FROM TASK WHERE IsArchived = 0 AND Category = "+ currentCategory.getId();
+                                    }//End of if else statement
                                 }
                                 //Call method to update the adapter and the recyclerView
                                 updateRecyclerViewData(sql);
@@ -1715,7 +1640,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     })//End of setPositiveButton method
                     .setNegativeButton(R.string.cancel,null)
                     .show();
-        }
+        }//End if else statement to check is  the grocery category and the isArchviveSelected is false
         Log.d("Ext_delete","Exit delete method in the MainActivity class.");
         //Return result whihc should be true if the whole method was completed
         return result;
@@ -2075,7 +2000,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     //Update the isSelected list within the adapter used to track the actua isSelected status of each task
                     taskAdapter.updateItemIsSelected(adapterPosition,isChecked);
                     //Declare and initialize a string to hold the sql query to update the cursor
-                    String sql= getSQLForRecyclerView();
+                    String sql= "";
+                    if(isArchivedSelected){
+                        sql="SELECT * FROM TASK WHERE IsArchived = 1 ORDER BY DateClosed " + tvHighlightFilter.getText().toString();
+                    }else{
+                        sql= getSQLForRecyclerView();
+                    }
                     //Update the isSelected attribute (un)checked task
                     db.updateBoolAttribute(currentCategory.getName().toString(),"IsSelected",task.getId(),isChecked);
                     //Call method to update the adapter and the recyclerView
@@ -2084,8 +2014,96 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             }//End of onCheckedChanged method
         });//End of setOnCheckedChangeListener method
         this.recyclerView.setAdapter(taskAdapter);
-        Log.d("Ext_setTaskAdapt","Exit setTaskAdapter method in the MainActivity class.");
+        Log.d("Ext_setTaskAdapt","Exit setTaskAdapter method in the MainActi" +
+                "vity class.");
     }//End of setTaskAdapter method
+
+    private boolean archive(){
+        Log.d("Ent_archive","Enter the archive method in the MainActivity class.");
+        boolean result = false;
+        //Declare a cursor object to query the database and hold the data
+        final Cursor c;
+        String   dialogMessage = " ";
+        c= db.runQuery("SELECT * FROM TASK WHERE IsSelected = 1");
+        //Check the cursor is not empty an d has more than one row
+        if(c.getCount()>1){
+            //Set the dialog box message to refer to several tasks
+            dialogMessage = "Are you sure you want to archive the following tasks?: ";
+            //Use a while loop to iterate through the cursor and obtain the description of each task selected to be deleted
+            while(c.moveToNext()){
+                dialogMessage += "\n- "+c.getString(1);
+            }//End of while loop
+            //If the cursor has less than 2 rows, check is not empty and has at least one row
+        }else if(c != null && c.getCount()>0){
+            //Move to first position of cursor.
+            c.moveToFirst();
+            //Set the dialog box message to be singular and refer to only one task and add its description (extracted from cursor)
+            dialogMessage = "Are you sure you want to delete the following task: " +c.getString(1)+"?";
+        }else{
+            //If cursor did not comply previous conditions, means the cursor is empty or null. Display error message for that
+            dialogMessage ="No task is selected to be archived.";
+        }//End of if else statement to check the number of groceries to be deleted
+        // Display a warning message asking user if he/she wants to delete the selected items
+        new AlertDialog.Builder(this)
+                    .setTitle("Archive tasks")//Set title
+                    .setMessage(dialogMessage)// Set the message as per previous dynamic selection
+                    .setPositiveButton("Ok",new DialogInterface.OnClickListener(){//Define the positive button
+                        public void onClick(DialogInterface dialog,int whichButton){
+                            //Check the cursor is not empty and is not null
+                            if(c != null && c.getCount()>0){
+                                //Move cursor to first position
+                                c.moveToFirst();
+                                //do while loop to iterate through the cursor and delete each item selected
+                                do {
+                                    //Declare and instantiate a task object from data in the current row of cursor
+                                    Task task= db.extractTask(c);
+                                    task.setSelected(false);
+                                    task.setArchived(true);
+                                    task.setDateClosed(Calendar.getInstance().getTimeInMillis());
+                                    //Call the deleteItem method and pass in the grocery object to be deleted
+                                    db.updateItem(task);
+                                    //boolean result = db.updateBoolAttribute("TASK","IsArchived",task.getId(),true);
+                                }while(c.moveToNext());//End of while loop to delete the selected groceries
+                                //Declare and instantiate as null a string object to hold the sql query to run. Depending on the current category, different query will be run
+                                String sql= getSQLForRecyclerView();
+                                //Call method to update the adapter and the recyclerView
+                                updateRecyclerViewData(sql);
+                            }//End of if statement to check cursor is not null or empty
+                        }//End of Onclick method
+                    })//End of setPositiveButton method
+                    .setNegativeButton(R.string.cancel,null)
+                    .show();
+        Log.d("Ext_archive","Exit the archiven method in the MainActivity class.");
+        return result;
+    }//End of archive method
+
+    private void sortArchivedTasks(){
+        Log.d("Ent_sortTask","Enter the sortArchivedTasks method in the MainActivity class.");
+        //Declare and initialize empty string to hold the orientation to be used to order the result data set from DB
+        String sort = "";
+        //Check the orientation global variable
+        switch (orientation){
+            case DESC:
+                //If it is descending order, set the new one to ascending
+                orientation = sortOrientation.ASC;
+                //Save the new orientation as a string
+                sort = sortOrientation.ASC.toString();
+                //Display in the menu
+                tvHighlightFilter.setText(sort);
+                break;
+            case ASC:
+                //If it is ascending order, set the new one to descending
+                orientation = sortOrientation.DESC;
+                //Save the new orientation as a string
+                sort = sortOrientation.DESC.toString();
+                //Display in the menu
+                tvHighlightFilter.setText(sort);
+                break;
+        }//End of switch statement
+        //Update recyclerViewer data for all archived tasks in DB
+        updateRecyclerViewData("SELECT * FROM TASK WHERE IsArchived = 1 ORDER BY DateClosed "+sort);
+        Log.d("Ext_sortTask","Exit the sortArchivedTasks method in the MainActivity class.");
+    }//End of sortArchivedTasks method
 
 
     public static String getGroceryCategory(){

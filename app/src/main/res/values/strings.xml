@@ -53,4 +53,5 @@
     <string name="addListSuccess">The new task list has been added.</string>
     <string name="addListFail">The new task list has not been added.</string>
     <string name="deleteTaskList">Delete Task Lists.</string>
+    <string name="archive">Archive</string>
 </resources>

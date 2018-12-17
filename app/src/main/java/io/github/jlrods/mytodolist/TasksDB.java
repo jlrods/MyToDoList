@@ -455,6 +455,7 @@ public class TasksDB extends SQLiteOpenHelper {
                     ", IsAppointment = "+toInt(((Task) item).isAppointment())+
                     ", DueDate = "+((Task) item).getDueDate()+
                     ", IsArchived = "+toInt(((Task) item).isArchived())+
+                    ", IsSelected = "+toInt(((Task)item).isSelected())+
                     ", Notes = '"+ ((Task) item).getNotes()+
                     "', DateCreated = "+((Task) item).getDateCreated()+
                     ", DateClosed = "+((Task) item).getDateClosed();
@@ -832,7 +833,7 @@ public class TasksDB extends SQLiteOpenHelper {
                     set += " IsAppointment = ";
                     break;
                 case "IsArchived":
-                    set += " IsArchive =  ";
+                    set += " IsArchived =  ";
                     break;
                 default:
                     set += " IsSelected = ";
