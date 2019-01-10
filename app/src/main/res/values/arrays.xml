@@ -27,8 +27,8 @@
         <item>10</item>
     </string-array>
     <string-array name="profileImageSources">
-        <item>Camera</item>
-        <item>Gallery</item>
+        <item>@string/camera</item>
+        <item>@string/gallery</item>
     </string-array>
     <string-array name="profileImageSourcesValues">
         <item>0</item>

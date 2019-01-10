@@ -793,7 +793,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     .setTitle(R.string.addTaskList)//Set title
                     .setMessage(R.string.addTaskListExp)// Set the message that clarifyes the requested action
                     .setView(input)
-                    .setPositiveButton("Ok",new DialogInterface.OnClickListener(){//Define the positive button
+                    .setPositiveButton(R.string.ok,new DialogInterface.OnClickListener(){//Define the positive button
                         public void onClick(DialogInterface dialog,int whichButton){
                             //Read from the user input the list name
                             String newListName = input.getText().toString();
@@ -802,7 +802,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                                 //Display error message via toast
                                 Toast.makeText(MainActivity.this,R.string.listNameEmpty,Toast.LENGTH_SHORT).show();
                             }else if(newListName.length()>MAX_TASK_LIST_NAME){
-                                Toast.makeText(MainActivity.this,"List name too long. Please select a shorter name.",Toast.LENGTH_SHORT).show();
+                                Toast.makeText(MainActivity.this, R.string.listNameTooLong,Toast.LENGTH_SHORT).show();
                             }else{
                                 //Check the name is not already in the categories list
                                 Cursor c = db.runQuery("SELECT * FROM CATEGORY");
@@ -879,7 +879,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                                 deletableCategories[which] = isChecked;
                             }//End of onClick method
                         })//End of setMultichoiceItems method)
-                        .setPositiveButton("Ok",new DialogInterface.OnClickListener(){
+                        .setPositiveButton(R.string.ok,new DialogInterface.OnClickListener(){
                             public void onClick(DialogInterface dialog,int whichButton){
                                 //Declare boolean flag to check if list with items to delete is empty or not
                                 boolean notEmpty = false;
@@ -900,7 +900,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                                     //Check at least one list was selected for deletion, otherwise display an error message
                                     if(notEmpty){
                                         //Declare and instantiate a string object to dynamically include the names of lists to be deleted in message
-                                        String deleteConfirmationMessage = "Are you sure you want to delete the following Task List";
+                                        String deleteConfirmationMessage = getResources().getString(R.string.wantToDeleteList);
                                         if(categoriesToBeDeleted.size()>1){
                                             //Make the text plural if more than one category will be deleted
                                             deleteConfirmationMessage += "s: \n\t- ";
@@ -922,7 +922,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                                         new AlertDialog.Builder(MainActivity.this)
                                                 .setTitle(R.string.deleteTaskList)
                                                 .setMessage(deleteConfirmationMessage)
-                                                .setPositiveButton("Ok",new DialogInterface.OnClickListener(){
+                                                .setPositiveButton(R.string.ok,new DialogInterface.OnClickListener(){
                                                     public void onClick(DialogInterface dialog,int whichButton){
                                                         //If clicked Ok, delete the tasks within the selected category
                                                         //Declare and instantiate a string to construct dynamically sql to look for all the tasks in the categories to be deleted
@@ -966,11 +966,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                                                 .setNegativeButton(R.string.cancel,null)
                                                 .show();
                                     }else{
-                                        Toast.makeText(MainActivity.this,"Error, no task list selected",Toast.LENGTH_SHORT).show();
+                                        Toast.makeText(MainActivity.this, R.string.noTaskListSelected,Toast.LENGTH_SHORT).show();
                                     }// End of if else statement to check the list of categories is not empty
                                 }else{
                                     //Display an error message
-                                    Toast.makeText(MainActivity.this,"Error,No task available for deletion ",Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(MainActivity.this, R.string.noTaskListAvailable,Toast.LENGTH_SHORT).show();
                                 }
                             }//End of Onclick method
                         })
@@ -1097,7 +1097,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     .setTitle(R.string.searchGrocery)
                     .setMessage(R.string.searchExplanation)
                     .setView(input)
-                    .setPositiveButton("Ok",new DialogInterface.OnClickListener(){
+                    .setPositiveButton(R.string.ok,new DialogInterface.OnClickListener(){
                         public void onClick(DialogInterface dialog,int whichButton){
                             //Set isSearchFilter boolean to true
                             isSearchFilter = true;
@@ -1123,17 +1123,17 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     .setTitle(R.string.searchTask)
                     .setMessage(R.string.searchExplanation)
                     .setView(input)
-                    .setPositiveButton("Ok",new DialogInterface.OnClickListener(){
+                    .setPositiveButton(R.string.ok,new DialogInterface.OnClickListener(){
                         public void onClick(DialogInterface dialog,int whichButton){
                             //Declare and instantiate as null a string object to hold the sql query to run. Depending on the current category, different query will be run
                             String sql="";
                             //First, Check the current property is All otherwise the query must include the specific category that has been selected
                             if(currentCategory.equals(findCategoryByName(allCategory))){
                                 //Define sql query to retrieve all the task categories
-                                sql = "SELECT * FROM TASK WHERE description LIKE '%"+input.getText().toString()+"%'";
+                                sql = "SELECT * FROM TASK WHERE IsArchived = 0 AND description LIKE '%"+input.getText().toString()+"%'";
                             }else{
                                 //Otherwise, define sql query to retrieve tasks with the search text and the current category
-                                sql = "SELECT * FROM TASK WHERE Category = " + currentCategory.getId() + " AND description LIKE '%"+input.getText().toString()+"%'";
+                                sql = "SELECT * FROM TASK WHERE IsArchived = 0 AND Category = " + currentCategory.getId() + " AND description LIKE '%"+input.getText().toString()+"%'";
                             }//End of if else statement to  check the current category object
                             //Set isSearchFilter boolean to true
                             isSearchFilter = true;
@@ -1145,7 +1145,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                             //Call method to update the adapter and the recyclerView
                             updateRecyclerViewData(sql);
                         }//End of Onclick method
-                    })//End of setPositiveButton melthod
+                    })//End of setPositiveButton method
                     .setNegativeButton(R.string.cancel,null)
                     .show();
         }//End of if else statements to check the currentCategory object
@@ -1190,7 +1190,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             //If that is the case, set the archive image
             this.imgCurrentList.setImageResource(R.drawable.archive_icon);
             //Set the archive text
-            this.tvCurrentList.setText("Archive");
+            this.tvCurrentList.setText(R.string.archived);
             //Change color of icon for archive list
             Drawable drawable = getResources().getDrawable(android.R.drawable.ic_menu_sort_by_size);
             drawable = DrawableCompat.wrap(drawable);
@@ -1283,7 +1283,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                         }//End of if else statements
                     }//End of onClick method
                 })//End of setMultichoiceItems method
-                .setPositiveButton("Ok",new DialogInterface.OnClickListener(){
+                .setPositiveButton(R.string.ok,new DialogInterface.OnClickListener(){
                     public void onClick(DialogInterface dialog,int whichButton){
                         //Declare and initialize a string variable to hold the sql query
                         String sql="";
@@ -1380,7 +1380,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     //Method to clear the grocery type filter selection
     public void clearTypeFilter(){
         Log.d("Ent_clearType","Enter clearTypeFilter method in the MainActivity class.");
-        //Check the selecte type list is not empty
+        //Check the selected type list is not empty
         if(this.selectedTypes.size()>0){
             //if it's not empty, declare a variable to hold the grocery type id
             int groceryTypeID;
@@ -1443,10 +1443,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 //Update the list of tasks
                 updateRecyclerViewData(sql);
             }else{
-                Toast.makeText(this,"No task selected to be highlighted.",Toast.LENGTH_SHORT).show();
+                Toast.makeText(this,R.string.noTaskToHighlight,Toast.LENGTH_SHORT).show();
             }//End of if else statement to check there are checked items
         }else{
-            Toast.makeText(this,"No task selected to be highlighted.",Toast.LENGTH_SHORT).show();
+            Toast.makeText(this,R.string.noTaskToHighlight,Toast.LENGTH_SHORT).show();
         }//End of if else statement to check the temp cursor is not empty
         Log.d("Ext_highlightTask","Exit the highligtSelectedTask method in the MainActivity class.");
     }//End of highlightSelectedTask method
@@ -1520,7 +1520,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             //Check the cursor is not empty an d has more than one row
             if(c.getCount()>1){
                 //Set the dialog box message to refer to several groceries
-                dialogMessage = "Are you sure you want to delete the following groceries?: ";
+                dialogMessage = getResources().getString(R.string.deleteGroceries);
                 //Use a while loop to iterate through the cursor and obtain the name of each grocery selected to be deleted
                 while(c.moveToNext()){
                     //Add the grocery name to the dialogMessage string
@@ -1531,16 +1531,16 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     //Move to first position of cursor.
                     c.moveToFirst();
                     //Set the dialog box message to be singular and refer to only one grocery and add its name (extracted from cursor)
-                    dialogMessage = "Are you sure you want to delete the following grocery: " +c.getString(1)+"?";
+                    dialogMessage = getResources().getString(R.string.delete1Grocery)+ " " + c.getString(1)+"?";
             }else{
                 //If cursor did not comply previous conditions, means the cursor is empty or null. Display error message for that
-                dialogMessage ="No grocery is selected to be deleted.";
+                dialogMessage =getResources().getString(R.string.noGroceryDeleted);
             }//End of if else statement to check the number of groceries to be deleted
             //Display a warning message asking user if he/she wants to delete the selected items
             new AlertDialog.Builder(this)
                     .setTitle(R.string.deleteGroceryTitle)//Set title
                     .setMessage(dialogMessage)// Set the message as per previous dynamic selection
-                    .setPositiveButton("Ok",new DialogInterface.OnClickListener(){//Define the positive button
+                    .setPositiveButton(R.string.ok,new DialogInterface.OnClickListener(){//Define the positive button
                         public void onClick(DialogInterface dialog,int whichButton){
                             //Check the cursor is not empty and is not null
                             if(c != null && c.getCount()>0){
@@ -1587,7 +1587,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             //Check the cursor is not empty an d has more than one row
             if(c.getCount()>1){
                 //Set the dialog box message to refer to several tasks
-                dialogMessage = "Are you sure you want to delete the following tasks?: ";
+                dialogMessage = getResources().getString(R.string.deleteTasks);
                 //Use a while loop to iterate through the cursor and obtain the description of each task selected to be deleted
                 while(c.moveToNext()){
                     dialogMessage += "\n- "+c.getString(1);
@@ -1597,16 +1597,16 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 //Move to first position of cursor.
                 c.moveToFirst();
                 //Set the dialog box message to be singular and refer to only one task and add its descriotion (extracted from cursor)
-                dialogMessage = "Are you sure you want to delete the following task: " +c.getString(1)+"?";
+                dialogMessage = getResources().getString(R.string.delete1Task)+ " " + c.getString(1)+"?";
             }else{
                 //If cursor did not comply previous conditions, means the cursor is empty or null. Display error message for that
-                dialogMessage ="No task is selected to be deleted.";
+                dialogMessage =getResources().getString(R.string.noTaskDeleted);
             }//End of if else statement to check the number of groceries to be deleted
             //Display a warning message asking user if he/she wants to delete the selected items
             new AlertDialog.Builder(this)
                     .setTitle(R.string.deleteTaskTitle)//Set title
                     .setMessage(dialogMessage)// Set the message as per previous dynamic selection
-                    .setPositiveButton("Ok",new DialogInterface.OnClickListener(){//Define the positive button
+                    .setPositiveButton(R.string.ok,new DialogInterface.OnClickListener(){//Define the positive button
                         public void onClick(DialogInterface dialog,int whichButton){
                             //Check the cursor is not empty and is not null
                             if(c != null && c.getCount()>0){
@@ -1707,10 +1707,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         input.requestFocus();
         //Display a Dialog to ask for the List name (New Category)
         new AlertDialog.Builder(this)
-                .setTitle("Set user name")//Set title
-                .setMessage("Please enter your name:")// Set the message that clarifyes the requested action
+                .setTitle(R.string.setUserName)//Set title
+                .setMessage(R.string.inputUserName)// Set the message that clarifyes the requested action
                 .setView(input)
-                .setPositiveButton("Ok",new DialogInterface.OnClickListener(){
+                .setPositiveButton(R.string.ok,new DialogInterface.OnClickListener(){
                     public void onClick(DialogInterface dialog,int whichButton){
                         //Check the input field is not empty
                         if(!input.getText().toString().trim().equals("")){
@@ -1721,11 +1721,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                                 tvUserName.setText(input.getText());
                             }else{
                                 //Display error message if the boolean received from DB is false
-                                Toast.makeText(MainActivity.this,"Something went wrong!!! Unable to update the user name.",Toast.LENGTH_SHORT).show();
+                                Toast.makeText(MainActivity.this,R.string.unableUpdateUserName,Toast.LENGTH_SHORT).show();
                             }//End of if else statement to update the user data and receive result of that DB action
                         }else{
                             //If input fiel is empty, display an error message
-                            Toast.makeText(MainActivity.this,"The user name cannot be left in blank. Please, type a name in the input field.",Toast.LENGTH_SHORT).show();
+                            Toast.makeText(MainActivity.this,R.string.blankUserName,Toast.LENGTH_SHORT).show();
                             //input.requestFocus();
                         }//End of if else statement to check the input field is not left blank
                     }//Define the positive button
@@ -1749,10 +1749,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         input.requestFocus();
         //Display a Dialog to ask for the List name (New Category)
         new AlertDialog.Builder(this)
-                .setTitle("Set user message")//Set title
-                .setMessage("Please enter your message:")// Set the message that clarifyes the requested action
+                .setTitle(R.string.setUserMsg)//Set title
+                .setMessage(R.string.inputUserMsg)// Set the message that clarifyes the requested action
                 .setView(input)
-                .setPositiveButton("Ok",new DialogInterface.OnClickListener(){
+                .setPositiveButton(R.string.ok,new DialogInterface.OnClickListener(){
                     public void onClick(DialogInterface dialog,int whichButton){
                         //Check the input field is not empty
                         if(!input.getText().toString().trim().equals("")){
@@ -1763,11 +1763,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                                 tvUserMessage.setText(input.getText());
                             }else{
                                 //Display error message if the boolean received from DB is false
-                                Toast.makeText(MainActivity.this,"Something went wrong!!! Unable to update the user message.",Toast.LENGTH_SHORT);
+                                Toast.makeText(MainActivity.this,R.string.unableUpdateUserMsg,Toast.LENGTH_SHORT);
                             }//End of if else statement to update the user data and receive result of that DB action
                         }else{
                             //If input field is empty, display an error message
-                            Toast.makeText(MainActivity.this,"The user message cannot be left in blank. Please, type a name in the input field.",Toast.LENGTH_SHORT).show();
+                            Toast.makeText(MainActivity.this,R.string.unableUpdateUserMsg,Toast.LENGTH_SHORT).show();
                             //input.requestFocus();
                         }//End of if else statement to check the input field is not left blank
                     }//Define the positive button
@@ -1783,10 +1783,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         Log.d("Ent_setProfPict","Enter setUserProfileImage method in the MainActivity class.");
         //CharSequence sources[] = new CharSequence[]{"Camera","Gallery"};
         new AlertDialog.Builder(MainActivity.this)
-                .setTitle("Select an option to load a profile picture:")
+                .setTitle(R.string.setUserImg)
                 //.setMessage("Select an option to load a profile picture:")
                 .setSingleChoiceItems(R.array.profileImageSources,0, null)//End of setSingleChoice method
-                .setPositiveButton("Ok",new DialogInterface.OnClickListener(){
+                .setPositiveButton(R.string.ok,new DialogInterface.OnClickListener(){
                     public void onClick(DialogInterface dialog,int whichButton){
                         //Check the option selected by user
                         int selectedPosition = ((AlertDialog)dialog).getListView().getCheckedItemPosition();
@@ -1833,9 +1833,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 permit)){
             //Display alert with justification about why permit is necessary
             new AlertDialog.Builder(activity)
-                    .setTitle("Permit request")
+                    .setTitle(R.string.generalPermitRqst)
                     .setMessage(justify)
-                    .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                    .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int whichButton) {
                             //Call method to request permission
                             ActivityCompat.requestPermissions(activity,
@@ -1864,7 +1864,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
             startActivityForResult(intent, RESULT_PROFILE_IMAGE_CAMERA);
         } else {
-                Toast.makeText(this, "Error while capturing the photo.", Toast.LENGTH_LONG).show();
+                Toast.makeText(this, R.string.errCamera, Toast.LENGTH_LONG).show();
         }
         Log.d("Ext_TakePicture","Exit takePicture method in the MainActivity class.");
     }// End of takePicture method
@@ -2014,8 +2014,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             }//End of onCheckedChanged method
         });//End of setOnCheckedChangeListener method
         this.recyclerView.setAdapter(taskAdapter);
-        Log.d("Ext_setTaskAdapt","Exit setTaskAdapter method in the MainActi" +
-                "vity class.");
+        Log.d("Ext_setTaskAdapt","Exit setTaskAdapter method in the MainActivity class.");
     }//End of setTaskAdapter method
 
     private boolean archive(){
@@ -2028,7 +2027,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         //Check the cursor is not empty an d has more than one row
         if(c.getCount()>1){
             //Set the dialog box message to refer to several tasks
-            dialogMessage = "Are you sure you want to archive the following tasks?: ";
+            dialogMessage = getResources().getString(R.string.archiveTasks);
             //Use a while loop to iterate through the cursor and obtain the description of each task selected to be deleted
             while(c.moveToNext()){
                 dialogMessage += "\n- "+c.getString(1);
@@ -2038,16 +2037,16 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             //Move to first position of cursor.
             c.moveToFirst();
             //Set the dialog box message to be singular and refer to only one task and add its description (extracted from cursor)
-            dialogMessage = "Are you sure you want to delete the following task: " +c.getString(1)+"?";
+            dialogMessage = getResources().getString(R.string.archive1Task) +c.getString(1)+"?";
         }else{
             //If cursor did not comply previous conditions, means the cursor is empty or null. Display error message for that
-            dialogMessage ="No task is selected to be archived.";
+            dialogMessage = getResources().getString(R.string.noTaskArchived);
         }//End of if else statement to check the number of groceries to be deleted
         // Display a warning message asking user if he/she wants to delete the selected items
         new AlertDialog.Builder(this)
-                    .setTitle("Archive tasks")//Set title
+                    .setTitle(R.string.archiveTaskTitle)//Set title
                     .setMessage(dialogMessage)// Set the message as per previous dynamic selection
-                    .setPositiveButton("Ok",new DialogInterface.OnClickListener(){//Define the positive button
+                    .setPositiveButton(R.string.ok,new DialogInterface.OnClickListener(){//Define the positive button
                         public void onClick(DialogInterface dialog,int whichButton){
                             //Check the cursor is not empty and is not null
                             if(c != null && c.getCount()>0){
@@ -2073,7 +2072,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     })//End of setPositiveButton method
                     .setNegativeButton(R.string.cancel,null)
                     .show();
-        Log.d("Ext_archive","Exit the archiven method in the MainActivity class.");
+        Log.d("Ext_archive","Exit the archive method in the MainActivity class.");
         return result;
     }//End of archive method
 

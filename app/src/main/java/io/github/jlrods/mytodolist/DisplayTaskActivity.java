@@ -115,7 +115,7 @@ public abstract class DisplayTaskActivity extends AppCompatActivity implements D
             //a sql query that queries the GROCERY_TYPE table
             sql = "SELECT * FROM GROCERY_TYPE";
             //Set the spinner hint to refer to a grocery type
-            spCategory.setPrompt("Select the grocery type...");
+            //spCategory.setPrompt("Select the grocery type...");
         }else{
             //For all other task Categories
             //Set the description input text hint to refer to a task description
@@ -124,7 +124,7 @@ public abstract class DisplayTaskActivity extends AppCompatActivity implements D
             sql = "SELECT * FROM CATEGORY WHERE _id NOT IN ( " +MainActivity.findCategoryByName(MainActivity.getAllCategory()).getId()+
                     ", "+MainActivity.findCategoryByName(MainActivity.getGroceryCategory()).getId()+")";
             //Set hint for category spinner to refer to a task category
-            this.spCategory.setPrompt("Select the task category...");
+            //this.spCategory.setPrompt("Select the task category...");
             //Run a sql query that will retrieve the current priority items from DB
             cPriority = MainActivity.db.runQuery("SELECT * FROM PRIORITY");
             //Instantiate a new adapterPriority with current data set from cursor c
@@ -275,7 +275,7 @@ public abstract class DisplayTaskActivity extends AppCompatActivity implements D
     public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
         Log.d("Ent_onTimeSetAdd","Enter the onTimeSet method in the AddTaskActivity class.");
         //Declare and initialize a calendar with present time
-        Calendar calendar = Calendar.getInstance();
+        //Calendar calendar = Calendar.getInstance();
         String time = this.getTimeString(hourOfDay,minute);
         this.tvHour.setText(time);
         Log.d("Ext_onTimeSetAdd","Exit the onTimeSet method in the AddTaskActivity class.");
@@ -315,7 +315,7 @@ public abstract class DisplayTaskActivity extends AppCompatActivity implements D
             }else{
                 //Otherwise, do the same subtraction as above and add a lead zero
                 hour = "0" + String.valueOf(hourOfDay-12);
-            }//End of if else statement to checkthe hour time (afternoon and night case)
+            }//End of if else statement to check the hour time (afternoon and night case)
         }//End of if else statement that checks the hour param
         //Check the minute param has only one digit (<10)
         if(minute < 10){
@@ -381,7 +381,7 @@ public abstract class DisplayTaskActivity extends AppCompatActivity implements D
         Date date;
         //Check if date text view is empty
         if(tvDate.getText().equals("")){
-            //if that is the case, add an agument to hold the current time in millisecs
+            //if that is the case, add an argument to hold the current time in millisecs
             date = Calendar.getInstance().getTime();
         }else{
             //Otherwise, declare and instantiate a new DateFormat object to define the date format
@@ -438,13 +438,13 @@ public abstract class DisplayTaskActivity extends AppCompatActivity implements D
         boolean isGrocery = MainActivity.getCurrentCategory().equals(MainActivity.findCategoryByName(MainActivity.getGroceryCategory()));
         //Display message for satisfactory database inclusion or update
         if(this instanceof AddTaskActivity && isGrocery){
-            message = "The new grocery has been successfully added to your grocery list.";
+            message = getResources().getString(R.string.successGrocery);
         }else if(this instanceof AddTaskActivity ){
-            message = "The new task has been successfully added to your task list";
+            message =  getResources().getString(R.string.successTask);
         }else if(this instanceof EditTaskActivity && isGrocery){
-            message = "The grocery was successfully updated.";
+            message = getResources().getString(R.string.successUpdateGrocery);
         }else if(this instanceof EditTaskActivity){
-            message = "The task was successfully updated ";
+            message = getResources().getString(R.string.successUpdateTask);
         }else{
             return false;
         }
