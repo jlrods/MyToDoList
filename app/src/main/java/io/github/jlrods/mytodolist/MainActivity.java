@@ -1437,6 +1437,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                             //Change current attribute to opposite value
                             isDone = true;
                         }//End of if statement to check the task is done  (Column 4 in DB)
+                        //Uncheck the task
+                        if(db.toBoolean(tempCursor.getInt(8))){
+                            //Change current attribute to opposite value
+                            db.updateBoolAttribute("TASK","IsSelected",tempCursor.getInt(0),false);
+                        }//End of if statement to check the task is done  (Column 4 in DB)
                         db.updateBoolAttribute(currentCategory.getName().toString(),"IsDone",tempCursor.getInt(0),isDone);
                     }//End of if statement to check the task is selected (Column 8 in DB)
                 }//End of while loop to iterate through the temp cursor
