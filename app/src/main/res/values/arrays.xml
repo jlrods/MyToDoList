@@ -34,4 +34,14 @@
         <item>0</item>
         <item>1</item>
     </string-array>
+    <string-array name="appTheme">
+        <item>Blue-Pink</item>
+        <item>Red-Green</item>
+        <item>Green</item>
+    </string-array>
+    <string-array name="appThemeValues">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+    </string-array>
 </resources>

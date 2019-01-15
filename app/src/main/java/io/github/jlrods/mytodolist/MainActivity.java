@@ -3,15 +3,19 @@ package io.github.jlrods.mytodolist;
 import android.Manifest;
 import android.app.Activity;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
@@ -31,10 +35,13 @@ import android.util.SparseBooleanArray;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageView;;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import java.util.ArrayList;
@@ -77,8 +84,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private String[] lastSearchText ={"",""};
     private static int highlightColor = R.color.colorAccent;
     private static int primaryTextColor = R.color.colorPrimaryText;
-    private static String doneColor ="green";
-    private static String doneHighlighter = "#FF4081";
+    private static String doneColor;
+    private static String doneHighlighter ;
     private static String whiteBackground ="#FAFAFA";
     private static String dateFormat ="MMM dd yyyy"; 
     private static boolean isArchivedSelected = false;
@@ -98,6 +105,27 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
+        //Get default current property from preferences
+        SharedPreferences pref =  PreferenceManager.getDefaultSharedPreferences(this);
+        String preferedThemeID = pref.getString("appTheme","0");
+        //int themeId;
+        /*if(preferedThemeID.equals("1")){
+            themeId = R.style.AppTheme1;
+            doneHighlighter = getResources().getString(R.color.colorAccent1);
+        }else if(preferedThemeID.equals("2")){
+            themeId = R.style.AppTheme2;
+            doneHighlighter = getResources().getString(R.color.colorAccent2);
+        }else{
+            themeId = R.style.AppTheme;
+            doneHighlighter = getResources().getString(R.color.colorAccent);
+        }*/
+        ;
+        int appThemeSelected = setAppTheme(this);
+        setTheme(appThemeSelected);
+
+        //doneColor = R.color.HighlightText2;
+        //setTheme(false ? R.style.AppTheme : R.style.AppTheme1);
         super.onCreate(savedInstanceState);
         Log.d("Ent_onCreateMain","Enter onCreate method in MainActivity class.");
         //Instantiate the database manager object
@@ -108,6 +136,18 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         this.groceryTypes = db.getGroceryTypeList();
         //Set layout for main activity
         setContentView(R.layout.activity_main);
+
+
+        LinearLayout tabMenu = findViewById(R.id.tabMenu);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            if(appThemeSelected == R.style.AppTheme1){
+                tabMenu.setBackground(getResources().getDrawable(R.drawable.topmenu_linear_layout_background1));
+            }else if(appThemeSelected == R.style.AppTheme2){
+                tabMenu.setBackground(getResources().getDrawable(R.drawable.topmenu_linear_layout_background2));
+            }else{
+                tabMenu.setBackground(getResources().getDrawable(R.drawable.topmenu_linear_layout_background));
+            }
+        }
 
         //Find the checkBox in the layout and set the onCheckedChangeListener handler
         this.cbOnlyChecked = this.findViewById(R.id.cbOnlyChecked);
@@ -238,7 +278,20 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         //Tool bar creation and functionality set up
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        //toolbar.setBackgroundColor(getResources().getColor(R.color.colorPrimary1));
         setSupportActionBar(toolbar);
+
+        //Window window = this.getWindow();
+/*
+        // clear FLAG_TRANSLUCENT_STATUS flag:
+        // window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+
+        // add FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS flag to the window
+        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+
+        // finally change the color
+        window.setStatusBarColor(ContextCompat.getColor(this,R.color.colorPrimaryDark1));*/
+
         /*ActionBar actionbar = getSupportActionBar();
         actionbar.setDisplayHomeAsUpEnabled(true);
         actionbar.setHomeAsUpIndicator(R.drawable.list_icon);*/
@@ -589,6 +642,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         int id = item.getItemId();
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            //Call the method to start the preferences activity
+            this.callPrefernces(null);
             return true;
         }else if(id==R.id.search){
             this.search();
@@ -2109,6 +2164,32 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         Log.d("Ext_sortTask","Exit the sortArchivedTasks method in the MainActivity class.");
     }//End of sortArchivedTasks method
 
+    //Method to call the Preferences screen
+    private void callPrefernces(View view){
+        Log.d("Ent_callPrefernce","Enter the callPreferences method in MainActivity.");
+        //Declare and instantiate a new Intent object, passing the PreferencesActivity class as argument
+        Intent i = new Intent(this, PreferencesActivity.class);
+        //Start the activity by passin in the intent
+        startActivity(i);
+        Log.d("Ext_callPrefernce","Exit the callPreferences method in MainActivity.");
+    }// End of callPreferences method
+
+    public static int setAppTheme(Context context){
+        SharedPreferences pref =  PreferenceManager.getDefaultSharedPreferences(context);
+        String preferedThemeID = pref.getString("appTheme","0");
+        int themeId;
+        if(preferedThemeID.equals("1")){
+            themeId = R.style.AppTheme1;
+            doneHighlighter = context.getResources().getString(R.color.colorAccent1);
+        }else if(preferedThemeID.equals("2")){
+            themeId = R.style.AppTheme2;
+            doneHighlighter = context.getResources().getString(R.color.colorAccent2);
+        }else{
+            themeId = R.style.AppTheme;
+            doneHighlighter = context.getResources().getString(R.color.colorAccent);
+        }
+        return themeId;
+    }
 
     public static String getGroceryCategory(){
         return groceryCategory;

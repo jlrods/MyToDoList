@@ -93,6 +93,8 @@
     <string name="successTask">The new task has been successfully added to your task list.</string>
     <string name="successUpdateGrocery">The grocery was successfully updated.</string>
     <string name="successUpdateTask">The task was successfully updated.</string>
+    <string name="appThemeSelection">App colour theme</string>
+    <string name="appThemeDescription">Select the colour combination for your app.</string>
     <string name="ok">OK</string>
 
 

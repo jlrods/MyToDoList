@@ -91,4 +91,6 @@
     <string name="successUpdateGrocery">La provision ha sido actualizada exitosamente.</string>
     <string name="successUpdateTask">La tarea ha sido actualizada exitosamente.</string>
     <string name="ok">Aceptar</string>
+    <string name="appThemeSelection">Colores de la aplicacion</string>
+    <string name="appThemeDescription">Seleccione la combinacion de colores para su aplication.</string>
 </resources>

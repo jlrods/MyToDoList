@@ -2,8 +2,10 @@ package io.github.jlrods.mytodolist;
 
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -18,6 +20,8 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
+import android.widget.Toolbar;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -59,10 +63,24 @@ public abstract class DisplayTaskActivity extends AppCompatActivity implements D
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        //Get default current property from preferences
+        //SharedPreferences pref =  PreferenceManager.getDefaultSharedPreferences(this);
+        //String preferedThemeID = pref.getString("appTheme","0");
+        /*int themeId;
+        if(preferedThemeID.equals("1")){
+            themeId = R.style.AppTheme1;
+        }else if(preferedThemeID.equals("2")){
+            themeId = R.style.AppTheme2;
+        }else{
+            themeId = R.style.AppTheme;
+        }*/
+        setTheme(MainActivity.setAppTheme(this));
+        //setTheme(themeId);
         super.onCreate(savedInstanceState);
         Log.d("Ent_onCreateDisp","Enter onCreate method in the DisplayTaskActivity abstract class.");
         //Set layout for this activity
         setContentView(R.layout.activity_add_task);
+
         //Extract extra data from Bundle object
         extras = getIntent().getExtras();
         //Initialize view object from layout to have access to them and set different texts and other properties
