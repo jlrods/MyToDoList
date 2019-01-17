@@ -64,23 +64,23 @@ public abstract class DisplayTaskActivity extends AppCompatActivity implements D
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         //Get default current property from preferences
-        //SharedPreferences pref =  PreferenceManager.getDefaultSharedPreferences(this);
-        //String preferedThemeID = pref.getString("appTheme","0");
-        /*int themeId;
+        SharedPreferences pref =  PreferenceManager.getDefaultSharedPreferences(this);
+        String preferedThemeID = pref.getString("appTheme","0");
+        int themeId;
         if(preferedThemeID.equals("1")){
-            themeId = R.style.AppTheme1;
+            themeId = R.style.AppTheme_AddEditTask1;
         }else if(preferedThemeID.equals("2")){
-            themeId = R.style.AppTheme2;
+            themeId = R.style.AppTheme_AddEditTask2;
         }else{
-            themeId = R.style.AppTheme;
-        }*/
-        setTheme(MainActivity.setAppTheme(this));
-        //setTheme(themeId);
+            themeId = R.style.AppTheme_AddEditTask;
+        }
+        //setTheme(MainActivity.setAppTheme(this));
+        //setTheme(R.style.AppTheme2);
+        setTheme(themeId);
         super.onCreate(savedInstanceState);
         Log.d("Ent_onCreateDisp","Enter onCreate method in the DisplayTaskActivity abstract class.");
         //Set layout for this activity
         setContentView(R.layout.activity_add_task);
-
         //Extract extra data from Bundle object
         extras = getIntent().getExtras();
         //Initialize view object from layout to have access to them and set different texts and other properties

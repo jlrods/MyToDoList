@@ -1,6 +1,7 @@
 package io.github.jlrods.mytodolist;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Context;
@@ -8,7 +9,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.content.res.Resources;
+import android.content.res.ColorStateList;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
@@ -35,8 +36,6 @@ import android.util.SparseBooleanArray;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.Window;
-import android.view.WindowManager;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
@@ -91,6 +90,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private static boolean isArchivedSelected = false;
     private enum sortOrientation {DESC,ASC}
     private sortOrientation orientation = sortOrientation.DESC;
+    private ColorStateList colorStateList1;
     //Constants
     private static int INDEX_TO_GET_LAST_TASK_LIST_ITEM = 3;
     private static final String groceryCategory = "Groceries";//Const Name should go in capital letters
@@ -103,29 +103,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private Uri uriProfileImage;
     private ImageView imgUserProfile;
 
+    @SuppressLint("ResourceType")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
-        //Get default current property from preferences
-        SharedPreferences pref =  PreferenceManager.getDefaultSharedPreferences(this);
-        String preferedThemeID = pref.getString("appTheme","0");
-        //int themeId;
-        /*if(preferedThemeID.equals("1")){
-            themeId = R.style.AppTheme1;
-            doneHighlighter = getResources().getString(R.color.colorAccent1);
-        }else if(preferedThemeID.equals("2")){
-            themeId = R.style.AppTheme2;
-            doneHighlighter = getResources().getString(R.color.colorAccent2);
-        }else{
-            themeId = R.style.AppTheme;
-            doneHighlighter = getResources().getString(R.color.colorAccent);
-        }*/
-        ;
+        //Get default current app theme from preferences
         int appThemeSelected = setAppTheme(this);
+        //Set the theme by passing theme id number coming from preferences
         setTheme(appThemeSelected);
-
-        //doneColor = R.color.HighlightText2;
-        //setTheme(false ? R.style.AppTheme : R.style.AppTheme1);
+        //Call  parent onCreate method
         super.onCreate(savedInstanceState);
         Log.d("Ent_onCreateMain","Enter onCreate method in MainActivity class.");
         //Instantiate the database manager object
@@ -136,18 +122,24 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         this.groceryTypes = db.getGroceryTypeList();
         //Set layout for main activity
         setContentView(R.layout.activity_main);
-
-
+        //Set proper color for the divider line on the tabMenu
+        //Find the view on the layout
         LinearLayout tabMenu = findViewById(R.id.tabMenu);
+        //Check the version number as setBackground method only works for Jelly Bean and onwards
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            //Check the app theme selected, coming from the shared references is the Red-Green theme
             if(appThemeSelected == R.style.AppTheme1){
+                //Set the divider line color to red
                 tabMenu.setBackground(getResources().getDrawable(R.drawable.topmenu_linear_layout_background1));
+                //Check the app theme selected, coming from the shared references is the Green theme
             }else if(appThemeSelected == R.style.AppTheme2){
+                //Set the divider line color to green
                 tabMenu.setBackground(getResources().getDrawable(R.drawable.topmenu_linear_layout_background2));
             }else{
+                //In case the default theme is selected, set the divider line colour to pink
                 tabMenu.setBackground(getResources().getDrawable(R.drawable.topmenu_linear_layout_background));
-            }
-        }
+            }//End of if else statement to check the app theme selected in preferences
+        }//End of if statement to check the sw version
 
         //Find the checkBox in the layout and set the onCheckedChangeListener handler
         this.cbOnlyChecked = this.findViewById(R.id.cbOnlyChecked);
@@ -275,26 +267,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         //Update the top menu text and images
         this.updateTopMenuUI();
-
         //Tool bar creation and functionality set up
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         //toolbar.setBackgroundColor(getResources().getColor(R.color.colorPrimary1));
         setSupportActionBar(toolbar);
-
-        //Window window = this.getWindow();
-/*
-        // clear FLAG_TRANSLUCENT_STATUS flag:
-        // window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
-
-        // add FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS flag to the window
-        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-
-        // finally change the color
-        window.setStatusBarColor(ContextCompat.getColor(this,R.color.colorPrimaryDark1));*/
-
-        /*ActionBar actionbar = getSupportActionBar();
-        actionbar.setDisplayHomeAsUpEnabled(true);
-        actionbar.setHomeAsUpIndicator(R.drawable.list_icon);*/
 
         //Floating button creation and functionality set up
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
@@ -311,12 +287,31 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
         toggle.syncState();
-
+        //Find the navigation view on the layout by using its id
         navigationView = (NavigationView) findViewById(R.id.nav_view);
-        Menu navMenu = this.navigationView.getMenu();
-        this.updateNavMenu(navMenu);
+        //Check the selected theme coming from shared preferences and set the text and icon color when items is selected
+        if(appThemeSelected == R.style.AppTheme1){
+            //If them is the Red-Green theme, set the color state object to dark green when selected
+            colorStateList1 = getResources().getColorStateList(R.drawable.drawer_item_color1);
+        }else if(appThemeSelected == R.style.AppTheme2){
+            //If them is the Red-Green theme, set the color state object to lime green when selected
+            colorStateList1 = getResources().getColorStateList(R.drawable.drawer_item_color2);
+        }
+        else{
+            ////If them is the default theme, set the color state object to pink when selected
+            colorStateList1 = getResources().getColorStateList(R.drawable.drawer_item_color);
+        }//End of if else statement to check the theme selected in preferences
+        //Set the item text and icon colour in navigation menu as peer color state object
+        navigationView.setItemTextColor(colorStateList1);
+        navigationView.setItemIconTintList(colorStateList1);
 
+        //Get the menu in the navigation view
+        Menu navMenu = this.navigationView.getMenu();
+        //Call method to populate the menu programmatically
+        this.updateNavMenu(navMenu);
+        //Set the current category item in nav menu as the selected item when the nav menu is open
         navMenu.findItem(categoryMenuItemId).setCheckable(true).setChecked(true);
+        //Set item selected listener
         navigationView.setNavigationItemSelectedListener(this);
         View headerView = navigationView.getHeaderView(0);
         //Declare and initialize the user avatar image
@@ -348,7 +343,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     setUserProfileMessage();
                 }
             });
-        }
+        }//End of if statement to check user cursor is not empty
 
         Log.d("Ent_onCreateMain","Enter onCreate method in MainActivity class.");
     }//End of onCreate Method
@@ -2097,7 +2092,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             //Move to first position of cursor.
             c.moveToFirst();
             //Set the dialog box message to be singular and refer to only one task and add its description (extracted from cursor)
-            dialogMessage = getResources().getString(R.string.archive1Task) +c.getString(1)+"?";
+            dialogMessage = getResources().getString(R.string.archive1Task)+" "+c.getString(1)+"?";
         }else{
             //If cursor did not comply previous conditions, means the cursor is empty or null. Display error message for that
             dialogMessage = getResources().getString(R.string.noTaskArchived);
@@ -2174,6 +2169,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         Log.d("Ext_callPrefernce","Exit the callPreferences method in MainActivity.");
     }// End of callPreferences method
 
+    @SuppressLint("ResourceType")
     public static int setAppTheme(Context context){
         SharedPreferences pref =  PreferenceManager.getDefaultSharedPreferences(context);
         String preferedThemeID = pref.getString("appTheme","0");
