@@ -10,6 +10,8 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
+import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
@@ -18,6 +20,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
+import android.support.annotation.RequiresApi;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
@@ -31,6 +34,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.SparseBooleanArray;
 import android.view.View;
@@ -45,6 +49,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener{
     //Define global variables and constants
@@ -85,12 +90,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private static int primaryTextColor = R.color.colorPrimaryText;
     private static String doneColor;
     private static String doneHighlighter ;
-    private static String whiteBackground ="#FAFAFA";
-    private static String dateFormat ="MMM dd yyyy"; 
+    private static String whiteBackground;
+    private static String dateFormat;
     private static boolean isArchivedSelected = false;
     private enum sortOrientation {DESC,ASC}
     private sortOrientation orientation = sortOrientation.DESC;
     private ColorStateList colorStateList1;
+    private static boolean dateFormatChanged = false;
     //Constants
     private static int INDEX_TO_GET_LAST_TASK_LIST_ITEM = 3;
     private static final String groceryCategory = "Groceries";//Const Name should go in capital letters
@@ -103,6 +109,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private Uri uriProfileImage;
     private ImageView imgUserProfile;
 
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
     @SuppressLint("ResourceType")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -114,6 +121,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         //Call  parent onCreate method
         super.onCreate(savedInstanceState);
         Log.d("Ent_onCreateMain","Enter onCreate method in MainActivity class.");
+        //Call method to setup language based on app preferences
+        this.setAppLanguage();
         //Instantiate the database manager object
         this.db = new TasksDB(this);
         //Populate the list of Categories
@@ -141,6 +150,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             }//End of if else statement to check the app theme selected in preferences
         }//End of if statement to check the sw version
 
+        //Set the white background color as per Resources
+        whiteBackground = getResources().getString(R.color.whiteBackground);
+
+
+
+        //Set the date format as per Shared preferences by calling setDateFormat method
+        this.setDateFormat();
         //Find the checkBox in the layout and set the onCheckedChangeListener handler
         this.cbOnlyChecked = this.findViewById(R.id.cbOnlyChecked);
 
@@ -347,6 +363,19 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         Log.d("Ent_onCreateMain","Enter onCreate method in MainActivity class.");
     }//End of onCreate Method
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.d("Ent_onResumeMain","Enter onResume method in MainActivity class.");
+        if(dateFormatChanged){
+            //Set the date format as per Shared preferences by calling setDateFormat method
+            this.setDateFormat();
+            //Update recyclerView
+            updateRecyclerViewData(getSQLForRecyclerView());
+        }
+        Log.d("Ext_onResumeMain","Exit onResume method in MainActivity class.");
+    }//End of onResume method
 
     /*@Override
     protected void onSaveInstanceState(Bundle saveState) {
@@ -647,6 +676,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             return this.delete();
         }else if(id == R.id.archive){
             return this.archive();
+        }else if(id == R.id.about){
+            this.throwAboutActivity(null);
+            return true;
         }
         return super.onOptionsItemSelected(item);
     }//End of onOptionsItemSelected method
@@ -1543,6 +1575,19 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         Log.d("Ext_throwAddTask","Exit throwAddTaskActivity method in the MainActivity class.");
     }//End of throwAddTaskActivity method
 
+    //Method to throw new throwAboutActivity
+    private void throwAboutActivity(View view){
+        Log.d("Ent_throwAbout","Enter throwAboutActivity method in the MainActivity class.");
+        //Declare and instantiate a new intent object
+        Intent i= new Intent(MainActivity.this,AboutActivity.class);
+        //Add extras to the intent object, specifically the current category where the add button was pressed from
+        //i.putExtra("category",this.currentCategory.toString());
+        //i.putExtra("sql",this.getSQLForRecyclerView());
+        //Start the addTaskActivity class
+        startActivity(i);
+        Log.d("Ext_throwAbout","Exit throwAboutActivity method in the MainActivity class.");
+    }//End of throwAboutActivity method
+
     private void throwEditTaskActivity(int id){
         Log.d("Ent_throwEditTask","Enter throwEditTaskActivity method in the MainActivity class.");
         //Declare and instantiate a new intent object
@@ -2171,6 +2216,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     @SuppressLint("ResourceType")
     public static int setAppTheme(Context context){
+        Log.d("Ent_setAppTheme","Enter setAppTheme method in MainActivity class.");
         SharedPreferences pref =  PreferenceManager.getDefaultSharedPreferences(context);
         String preferedThemeID = pref.getString("appTheme","0");
         int themeId;
@@ -2184,8 +2230,42 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             themeId = R.style.AppTheme;
             doneHighlighter = context.getResources().getString(R.color.colorAccent);
         }
+        Log.d("Ext_setAppTheme","Exit setAppTheme method in MainActivity class.");
         return themeId;
-    }
+    }//End of setAppTheme method
+
+    public void setAppLanguage(){
+        Log.d("Ent_setAppLang","Enter setAppLanguage method in MainActivity class.");
+        SharedPreferences pref =  PreferenceManager.getDefaultSharedPreferences(this);
+        String languageValue = pref.getString("languages","0");
+        String language;
+        if(languageValue.equals("0")){
+            language = "en";
+        }else{
+            language = "es";
+        }
+        // Change locale settings in the app.
+        Resources res = this.getResources();
+        DisplayMetrics dm = res.getDisplayMetrics();
+        Configuration conf = res.getConfiguration();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            conf.setLocale(new Locale(language.toLowerCase())); // API 17+ only.
+        }
+        // Use conf.locale = new Locale(...) if targeting lower versions
+        res.updateConfiguration(conf, dm);
+        Log.d("Ext_setAppLang","Exit setAppLanguage method in MainActivity class.");
+    }//End of setAppTheme method
+
+    private void setDateFormat(){
+        Log.d("Ent_setDateFormat","Enter setDateFormat method in MainActivity class.");
+        //Get shared references info
+        SharedPreferences pref =  PreferenceManager.getDefaultSharedPreferences(this);
+        //Get the preference selected for date format
+        String preferredDateFormat = pref.getString("dateFormat","0");
+        //Assign the preferred value to the global variable
+        dateFormat = getResources().getStringArray(R.array.dateFormats)[Integer.parseInt(preferredDateFormat)];
+        Log.d("Ext_setDateFormat","Exit setDateFormat method in MainActivity class.");
+    }//End of setDateFormat method
 
     public static String getGroceryCategory(){
         return groceryCategory;
@@ -2222,6 +2302,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     public static NavigationView getNavigationView(){return  navigationView;}
 
     public static DrawerLayout getDrawer(){return drawer;}
+
+    public static boolean isDateFormatChanged() {return dateFormatChanged;}
+
+    public static void setDateFormatChanged(boolean newValue) {
+        dateFormatChanged = newValue;
+    }
 
     @Override
     public void onBackPressed() {

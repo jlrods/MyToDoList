@@ -90,7 +90,14 @@
     <string name="successTask">La nueva tarea has side añadida exitosamente a la lista.</string>
     <string name="successUpdateGrocery">La provision ha sido actualizada exitosamente.</string>
     <string name="successUpdateTask">La tarea ha sido actualizada exitosamente.</string>
-    <string name="ok">Aceptar</string>
     <string name="appThemeSelection">Colores de la aplicacion</string>
     <string name="appThemeDescription">Seleccione la combinacion de colores para su aplication.</string>
+    <string name="ok">Aceptar</string>
+    <string name="dateFormatSelection">Formato de fecha a mostrar</string>
+    <string name="dateFormatDescription">Seleccione el formato de fecha para su aplication.</string>
+    <string name="appStyles">Apariencia de la aplicacion</string>
+    <string name="english">Ingles</string>
+    <string name="spanish">Español</string>
+    <string name="changeLang">Idioma</string>
+    <string name="changeLangDescription">Cambie el idioma de la aplicacion.</string>
 </resources>

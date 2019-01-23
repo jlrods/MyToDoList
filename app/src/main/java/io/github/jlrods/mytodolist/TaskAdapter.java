@@ -129,7 +129,8 @@ public class TaskAdapter extends
         h.checkBox.setOnCheckedChangeListener(this.onCheckedChangeListener);
         //Check if task is done so it can be highlighted
         if(task.isDone()){
-            h.description.setText(Html.fromHtml("<font color='"+MainActivity.getDoneColor()+"'>"+ h.description.getText()+"</font>"));
+            //h.description.setText(Html.fromHtml("<font color='"+MainActivity.getDoneColor()+"'>"+ h.description.getText()+"</font>"));
+            h.description.setText(h.description.getText());
             //h.description.setHighlightColor(MainActivity.getHighlightColor());
             //h.description.setPaintFlags(h.description.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
             h.description.setBackgroundColor(Color.parseColor(MainActivity.getDoneHighlighter()));
