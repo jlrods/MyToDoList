@@ -107,7 +107,7 @@ public class EditTaskActivity extends DisplayTaskActivity {
                                 newGrocery.setSelected(oldGrocery.isSelected());
                                 if (newGrocery.getDescription().equals(oldGrocery.getDescription()) && newGrocery.getType().toString().equals(oldGrocery.getType().toString())) {
                                     //Error message as no changes has been detected
-                                    Toast.makeText(this, "No changes recorded. The grocery is the same as before.", Toast.LENGTH_LONG).show();
+                                    Toast.makeText(this, R.string.noChangeGrocery, Toast.LENGTH_LONG).show();
                                 } else {
                                     //Update DB with new data
                                     MainActivity.db.updateItem(newGrocery);
@@ -128,13 +128,13 @@ public class EditTaskActivity extends DisplayTaskActivity {
                                         //result = this.updateDataList("SELECT * FROM GROCERIES ORDER BY TypeOfGrocery ASC");
                                     } else {
                                         //Display error message
-                                        Toast.makeText(this, "Error: Failed to update the grocery", Toast.LENGTH_LONG).show();
+                                        Toast.makeText(this,  R.string.updateGrocFailed, Toast.LENGTH_LONG).show();
                                     }//End of if else statement to check the update was successful
                                 }//End of if else statement tha tchecks the groceries are not the same
                             }//End of if to check the temp cursor is not empty
                         }else{
                             //Display error message
-                            Toast.makeText(this, "Error: Failed to update the grocery", Toast.LENGTH_LONG).show();
+                            Toast.makeText(this, R.string.updateGrocFailed, Toast.LENGTH_LONG).show();
                         }
                 }else{
                     //For all other tasks proceed as follows
@@ -163,7 +163,7 @@ public class EditTaskActivity extends DisplayTaskActivity {
                                     && newTask.getDueDate() == oldTask.getDueDate()
                                     && newTask.getNotes().equals(oldTask.getNotes())){
                                 //Error message since no changes were detected
-                                Toast.makeText(this,"No changes recorded. The task is the same as before.",Toast.LENGTH_LONG).show();
+                                Toast.makeText(this,R.string.noChangeTask,Toast.LENGTH_LONG).show();
                             }else{
                                 //If there is at least one difference, update the DB
                                 //Update DB with new data
@@ -186,11 +186,15 @@ public class EditTaskActivity extends DisplayTaskActivity {
                                     //Notify data set change
                                     result = this.updateDataList(this.extras.getString("sql"));
                                     //result = this.updateDataList("SELECT * FROM TASK ORDER BY Category ASC");
+                                }else {
+                                    //Display error message
+                                    Toast.makeText(this, R.string.updateTaskFailed, Toast.LENGTH_LONG).show();
                                 }//End of if statement that checks the DB update matches the data
                             }//End of if else statements that checks the task has changed in some way
                         }//End of if statement that checks the temp cursor is not empty
                     }else{
-                        //Display an error message
+                        //Display error message
+                        Toast.makeText(this, R.string.updateTaskFailed, Toast.LENGTH_LONG).show();
 
                     }//End of if else statement that check the task is not null
                 }//End if else statement to check the current category

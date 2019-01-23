@@ -19,7 +19,7 @@
         android:id="@+id/archive"
         android:icon="@android:drawable/ic_menu_set_as"
         android:orderInCategory="200"
-        android:title="Archive"
+        android:title="@string/archiveTaskTitle"
         app:showAsAction="ifRoom" />
     <item
         android:id="@+id/about"

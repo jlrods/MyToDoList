@@ -17,7 +17,7 @@
         android:id="@+id/imgUserProfile"
         android:layout_width="50dp"
         android:layout_height="50dp"
-        android:src="@drawable/ic_launcher_round"
+        android:src="@mipmap/ic_my_todo_list_round"
         app:civ_border_width="2dp"
         app:civ_border_color="#FF000000"/>
 

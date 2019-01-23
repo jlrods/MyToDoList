@@ -4,9 +4,8 @@
 
     <application
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@mipmap/ic_my_todo_list"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
@@ -20,11 +19,18 @@
             </intent-filter>
         </activity>
         <activity
-        android:name=".AddTaskActivity"
-        android:label="Add a task or grocery" />
+            android:name=".AddTaskActivity"
+            android:label="Add a task or grocery"/>
         <activity
             android:name=".EditTaskActivity"
             android:label="Edit a task or grocery" />
+        <activity
+            android:name=".PreferencesActivity"
+            android:theme="@style/AppTheme.NoActionBar"/>
+        <activity
+            android:name=".AboutActivity"
+            android:label="About MyToDoList"
+            android:theme="@style/AppTheme.NoActionBar"/>
     </application>
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
