@@ -87,7 +87,7 @@
     <string name="delete1Task">Are you sure you want to delete the following task: </string>
     <string name="noTaskDeleted">No task is selected to be deleted.</string>
     <string name="archiveTasks">Are you sure you want to archive the following tasks?: </string>
-    <string name="archive1Task">Are you sure you want to delete the following task: </string>
+    <string name="archive1Task">Are you sure you want to archive the following task: </string>
     <string name="noTaskArchived">No task is selected to be archived.</string>
     <string name="successGrocery">The new grocery has been successfully added to your grocery list.</string>
     <string name="successTask">The new task has been successfully added to your task list.</string>
@@ -103,7 +103,6 @@
     <string name="spanish">Spanish</string>
     <string name="changeLang">Language</string>
     <string name="changeLangDescription">Change the app language.</string>
-
     <string name="aboutTitle">All about MyToDoList:</string>
     <string name="aboutMain">Main Screen</string>
     <string name="aboutNav">nav menu</string>

@@ -25,10 +25,10 @@ public class TasksDB extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase db) {
         Log.d("Ent_DBOncreate","Enter onCreate method in TasksDB class.");
         //Create table to store app state
-        db.execSQL("CREATE TABLE APP (_id INTEGER PRIMARY KEY AUTOINCREMENT,currentCategory INTEGER, isSearchFilter INTEGER, isChecked INTEGER," +
+        db.execSQL("CREATE TABLE APP (_id INTEGER PRIMARY KEY AUTOINCREMENT,currentCategory INTEGER,isArchivedSelected INTEGER ,isSearchFilter INTEGER, isChecked INTEGER," +
                 "lastSearchTask TEXT,lastSearchGrocery TEXT);");
         //Populate default state of app
-        db.execSQL("INSERT INTO APP VALUES(null,1,0,0,'','')");
+        db.execSQL("INSERT INTO APP VALUES(null,1,0,0,0,'','')");
         //Create User table
         db.execSQL("CREATE TABLE USER (_id INTEGER PRIMARY KEY AUTOINCREMENT,UserName TEXT, UserMessage TEXT, Photo TEXT);");
         //Populate the user table with unique user
@@ -903,7 +903,7 @@ public class TasksDB extends SQLiteOpenHelper {
         return success;
     }//End of updateUser method
 
-    public boolean updateAppState(int currentCategory,int isSearchFilter, int isChecked, String lastSearchTask, String lastSearchGrocery){
+    public boolean updateAppState(int currentCategory,int isArchivedSelected,int isSearchFilter, int isChecked, String lastSearchTask, String lastSearchGrocery){
         Log.d("Ent_UpdateState","Enter the updateAppState method in the TaskDB class.");
         boolean success = false;
         Cursor appState;
@@ -912,6 +912,7 @@ public class TasksDB extends SQLiteOpenHelper {
         appState = this.runQuery("SELECT * FROM APP");
         String updateState ="UPDATE APP SET ";
         String fields = " currentCategory = " + currentCategory + ","+
+                        " isArchivedSelected = " + isArchivedSelected+ ","+
                         " isSearchFilter = " + isSearchFilter + ","+
                         " isChecked = "+ isChecked + ","+
                         " lastSearchTask = '" + lastSearchTask + ","+
