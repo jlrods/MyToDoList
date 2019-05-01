@@ -20,7 +20,6 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
-import android.widget.Toolbar;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -465,7 +464,7 @@ public abstract class DisplayTaskActivity extends AppCompatActivity implements D
             message = getResources().getString(R.string.successUpdateTask);
         }else{
             return false;
-        }
+        }//End of if else statement
         Toast.makeText(this,message,Toast.LENGTH_SHORT).show();
         //Set method result to true
         result = true;
@@ -479,6 +478,11 @@ public abstract class DisplayTaskActivity extends AppCompatActivity implements D
         if(this.extras.getString("category").equals(MainActivity.getGroceryCategory())){
             //Firstly, get the grocery name input by user. Declare and instantiate a string variable for that
             String groceryName = this.etDescription.getText().toString();
+            //Check the grocery name has an apostrophe
+            if(groceryName.contains("'")){
+                //If it does, call method in MainActivity to include escape character
+                groceryName = MainActivity.includeApostropheEscapeChar(groceryName);
+            }//End of if statement
             //Check the grocery name is not empty
             if(!groceryName.trim().equals("")){
                 //Move to current spinner position the cursor that holds data for that spinner (Grocery type spinner)
@@ -498,8 +502,6 @@ public abstract class DisplayTaskActivity extends AppCompatActivity implements D
                     }//End of if statement
                 }else if(this instanceof EditTaskActivity){
                     id = extras.getInt("id");
-                }else{
-                    //Action to be defined
                 }
                 //Populate item with a grocery object
                 item= new Grocery(id,groceryName,MainActivity.findGroceryTypeByName(MainActivity.getGroceryCategory()),type,false);
@@ -512,6 +514,11 @@ public abstract class DisplayTaskActivity extends AppCompatActivity implements D
             //In case the item to be added is a task and not a grocery
             //Firstly, get the task description input by user. Declare and instantiate a string variable for that
             String taskDescription = this.etDescription.getText().toString();
+            //Check the task description has an apostrophe
+            if(taskDescription.contains("'")){
+                //If that is the case call method in MainMethod to include escape character
+                taskDescription = MainActivity.includeApostropheEscapeChar(taskDescription);
+            }//End of if statement to check apostrophe in the task description
             //Check the grocery name is not empty
             if(!taskDescription.trim().equals("")) {
                 //Move to current Category spinner position the cursor that holds data for that spinner (Category spinner)
@@ -530,8 +537,14 @@ public abstract class DisplayTaskActivity extends AppCompatActivity implements D
                     dueDate = this.getAppointmentDate();
                 }//End of if statement to check the isAppointment checkbox is checked
                 //Get the text from the notes text view
-                String notes = this.etNotes.getText().toString();
+                String notes = this.etNotes.getText().toString();;
+                //Check the current notes input by user contains apostrophe
+                if(notes.contains("'")){
+                    //If it does, call method to include escape character
+                    notes = MainActivity.includeApostropheEscapeChar(this.etNotes.getText().toString());
+                }//End of if statement
                 int id =-1;
+                //Check the activity instance to define what kind of object has to be created
                 if(this instanceof AddTaskActivity){
                     //Declare and instantiate a new cursor object to hold data from sql query to retrieve the max value from _id column in GROCERIES table
                     Cursor tempCursor = MainActivity.db.runQuery("SELECT MAX(_id) FROM TASK");
@@ -544,8 +557,6 @@ public abstract class DisplayTaskActivity extends AppCompatActivity implements D
                 }else if(this instanceof EditTaskActivity){
                     id = this.extras.getInt("id");
                     item = new Task(id,taskDescription,category,priority,false,this.cbIsAppointment.isChecked(),dueDate,false ,notes);
-                }else{
-                    //Action to be defined
                 }//End of if else statements to check the instance of the current activity
             }else {
                 //Display error message via toast if the task description was left empty
