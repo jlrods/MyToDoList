@@ -910,15 +910,27 @@ public class TasksDB extends SQLiteOpenHelper {
         //Declare and instantiate a new database object to handle the database operations
         SQLiteDatabase db = getWritableDatabase();
         appState = this.runQuery("SELECT * FROM APP");
+        //Declare string for the fist part of sql query
         String updateState ="UPDATE APP SET ";
+        //Prepare lastSearchTask and lastSearchGrocery text before sql is run --> include escape character for apostrophe
+        if(lastSearchTask.contains("'")){
+            lastSearchTask = MainActivity.includeApostropheEscapeChar(lastSearchTask);
+        }//End of if statement
+        if(lastSearchGrocery.contains("'")){
+            lastSearchGrocery = MainActivity.includeApostropheEscapeChar(lastSearchGrocery);
+        }//End of if statement
+        //Form all the query fields section
         String fields = " currentCategory = " + currentCategory + ","+
                         " isArchivedSelected = " + isArchivedSelected+ ","+
                         " isSearchFilter = " + isSearchFilter + ","+
                         " isChecked = "+ isChecked + ","+
-                        " lastSearchTask = '" + lastSearchTask + ","+
-                        " lastSearchGrocery = '" + lastSearchGrocery;
+                        " lastSearchTask = '" + lastSearchTask+ "',"+
+                        " lastSearchGrocery = '" + lastSearchGrocery +"'";
+        //String to hold the where part of the query
         String whereId = " WHERE _id = ";
+        //String to hold the complete sql query
         String sql = "";
+        //get next app state (only one should be saved)
         if(appState.moveToNext()){
             sql = updateState+fields+ whereId+appState.getInt(0);
         }
@@ -934,10 +946,4 @@ public class TasksDB extends SQLiteOpenHelper {
         Log.d("Ext_UpdateState","Exit the updateAppState method in the TaskDB class.");
         return success;
     }//End of updateAppState
-
-
-
-
-
-
 }//End of TaskDB class

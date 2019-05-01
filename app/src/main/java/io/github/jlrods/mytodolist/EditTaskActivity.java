@@ -44,12 +44,10 @@ public class EditTaskActivity extends DisplayTaskActivity {
             if(cItem.moveToNext()){
                 Task task = MainActivity.db.extractTask(cItem);
                 this.etDescription.setText(task.getDescription());
-                //this.cCategory.moveToPosition(task.getCategory().getId()-1);
                 adapterCategory = new SpinnerAdapter(this,cCategory, CursorAdapter.FLAG_REGISTER_CONTENT_OBSERVER);
                 spCategory.setAdapter(adapterCategory);
                 int position = adapterCategory.findItemPosition(task.getCategory().toString());
                 spCategory.setSelection(position);
-                //this.cPriority.moveToPosition(task.getPriority().ordinal());
                 adapterPriority = new SpinnerAdapter(this,cPriority,CursorAdapter.FLAG_REGISTER_CONTENT_OBSERVER);
                 spPriority.setAdapter(adapterPriority);
                 spPriority.setSelection(task.getPriority().ordinal());
@@ -111,7 +109,9 @@ public class EditTaskActivity extends DisplayTaskActivity {
                                 } else {
                                     //Update DB with new data
                                     MainActivity.db.updateItem(newGrocery);
-                                    //Check the grocery in DB is the same sent as param
+                                    //Notify data set change
+                                    result = this.updateDataList(this.extras.getString("sql"));
+                                    /*//Check the grocery in DB is the same sent as param
                                     //Retrieve the just modified grocery from DB
                                     tempCursor = MainActivity.db.runQuery("SELECT * FROM GROCERIES WHERE _id = " + newGrocery.getId());
                                     //Check the cursor is not empty
@@ -129,7 +129,7 @@ public class EditTaskActivity extends DisplayTaskActivity {
                                     } else {
                                         //Display error message
                                         Toast.makeText(this,  R.string.updateGrocFailed, Toast.LENGTH_LONG).show();
-                                    }//End of if else statement to check the update was successful
+                                    }//End of if else statement to check the update was successful*/
                                 }//End of if else statement tha tchecks the groceries are not the same
                             }//End of if to check the temp cursor is not empty
                         }else{
@@ -168,7 +168,9 @@ public class EditTaskActivity extends DisplayTaskActivity {
                                 //If there is at least one difference, update the DB
                                 //Update DB with new data
                                 MainActivity.db.updateItem(newTask);
-                                //Check the task in DB is the same sent as param
+                                //Notify data set change
+                                result = this.updateDataList(this.extras.getString("sql"));
+                                /*//Check the task in DB is the same sent as param
                                 //Retrieve the just modified grocery from DB
                                 tempCursor = MainActivity.db.runQuery("SELECT * FROM TASK WHERE _id = "+newTask.getId());
                                 //Check the cursor is not empty
@@ -189,7 +191,7 @@ public class EditTaskActivity extends DisplayTaskActivity {
                                 }else {
                                     //Display error message
                                     Toast.makeText(this, R.string.updateTaskFailed, Toast.LENGTH_LONG).show();
-                                }//End of if statement that checks the DB update matches the data
+                                }//End of if statement that checks the DB update matches the data*/
                             }//End of if else statements that checks the task has changed in some way
                         }//End of if statement that checks the temp cursor is not empty
                     }else{

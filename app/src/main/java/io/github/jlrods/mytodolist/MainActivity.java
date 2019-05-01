@@ -153,8 +153,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         //Set the white background color as per Resources
         whiteBackground = getResources().getString(R.color.whiteBackground);
 
-
-
         //Set the date format as per Shared preferences by calling setDateFormat method
         this.setDateFormat();
         //Find the checkBox in the layout and set the onCheckedChangeListener handler
@@ -528,8 +526,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             }//End of if else statements to check the current category
             //Check if the search filter has been applied
             if(isSearchFilter){
-                //If it's applied, condition 1 mus include the last search text
-                condition1 = column1+" LIKE '%"+lastSearchText[i]+"'";
+                //If it's applied, condition 1 must include the last search text
+                String lastSearch = "";
+                if(lastSearchText[i].contains("'")){
+                    lastSearch = includeApostropheEscapeChar(lastSearchText[i]);
+                }else{
+                    lastSearch = lastSearchText[i];
+                }
+                condition1 = column1+" LIKE '%"+lastSearch+"'";
             }//End of if statement to check the search filter
             //Check the only checked items filter is applied
             if(cbOnlyChecked.isChecked()){
@@ -864,7 +868,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             invalidateOptionsMenu();
             //Update the top menu text and images
             this.updateTopMenuUI();
-            this.db.updateAppState(currentCategory.getId(),db.toInt(isArchivedSelected),db.toInt(isSearchFilter),db.toInt(cbOnlyChecked.isChecked()),lastSearchText[0]+"'",lastSearchText[1]+"'");
+            this.db.updateAppState(currentCategory.getId(),db.toInt(isArchivedSelected),db.toInt(isSearchFilter),db.toInt(cbOnlyChecked.isChecked()),lastSearchText[0],lastSearchText[1]);
             drawer.closeDrawer(GravityCompat.START);
         } else if (id == R.id.nav_grocery) {
             //Check the Archived tasks list is selected or was selected
@@ -898,7 +902,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             //Update the top menu text and images
             this.updateTopMenuUI();
             updateRecyclerViewData(this.getSQLForRecyclerView());
-            this.db.updateAppState(currentCategory.getId(),db.toInt(isArchivedSelected),db.toInt(isSearchFilter),db.toInt(cbOnlyChecked.isChecked()),lastSearchText[0]+"'",lastSearchText[1]+"'");
+            this.db.updateAppState(currentCategory.getId(),db.toInt(isArchivedSelected),db.toInt(isSearchFilter),db.toInt(cbOnlyChecked.isChecked()),lastSearchText[0],lastSearchText[1]);
             drawer.closeDrawer(GravityCompat.START);
         //Check if the Add list item was selected
         } else if (id == R.id.nav_addList) {
@@ -940,6 +944,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                                     int actualId = -1;
                                     if(c.moveToNext()) {
                                         temId = c.getInt(0);
+                                        if(newListName.contains("'")){
+                                            newListName = includeApostropheEscapeChar(newListName);
+                                        }
                                         Category newList = new Category(temId,newListName);
                                         actualId = db.addItem(newList);
                                     }
@@ -1095,6 +1102,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                         .show();
             }//End of if statement to check the cursor is not empty
         }else if(id == R.id.nav_archive){
+            //Check if global checkbox state
+            if(this.cbOnlyChecked.isChecked()){
+                this.cbOnlyChecked.setChecked(false);
+            }//End of if statement to check the check box state
+            //Check if global isSearch filer variable is set to true
+            if(this.isSearchFilter){
+                this.isSearchFilter = false;
+            }//End of if statement to check isSearchFilter state
             //Set the Archived tasks list to be selected
             this.isArchivedSelected = true;
             //Set the current category to be all
@@ -1118,10 +1133,18 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             //Update the top menu to display correct images and menu names
             this.updateTopMenuUI();
 
-            this.db.updateAppState(currentCategory.getId(),db.toInt(isArchivedSelected),db.toInt(isSearchFilter),db.toInt(cbOnlyChecked.isChecked()),lastSearchText[0]+"'",lastSearchText[1]+"'");
+            this.db.updateAppState(currentCategory.getId(),db.toInt(isArchivedSelected),db.toInt(isSearchFilter),db.toInt(cbOnlyChecked.isChecked()),lastSearchText[0],lastSearchText[1]);
             //Close the drawer
             drawer.closeDrawer(GravityCompat.START);
         }else{
+            //Check if global checkbox state
+            if(this.cbOnlyChecked.isChecked()){
+                this.cbOnlyChecked.setChecked(false);
+            }//End of if statement to check the check box state
+            //Check if global isSearch filer variable is set to true
+            if(this.isSearchFilter){
+                this.isSearchFilter = false;
+            }//End of if statement to check isSearchFilter state
             //Check the Archived tasks list is selected or was selected
             if(this.isArchivedSelected){
                 //If that is the case, set to false, so new category is in use
@@ -1168,13 +1191,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 }//End of if statement to extract data from cursor
             }//End of while loop to iterate through the cursor
             //Call method to update the RecyclerView data set and update ui
-            this.updateRecyclerViewData("SELECT * FROM TASK WHERE Category = "+id+" AND IsArchived = 0 ORDER BY _id");
+            this.updateRecyclerViewData(getSQLForRecyclerView());
+            //this.updateRecyclerViewData("SELECT * FROM TASK WHERE Category = "+id+" AND IsArchived = 0 ORDER BY _id");
             //Save the App state in the DB
-            this.db.updateAppState(currentCategory.getId(),db.toInt(isArchivedSelected),db.toInt(isSearchFilter),db.toInt(cbOnlyChecked.isChecked()),lastSearchText[0]+"'",lastSearchText[1]+"'");
+            this.db.updateAppState(currentCategory.getId(),db.toInt(isArchivedSelected),db.toInt(isSearchFilter),db.toInt(cbOnlyChecked.isChecked()),lastSearchText[0],lastSearchText[1]);
             //Close the Navigation Menu drawer
             drawer.closeDrawer(GravityCompat.START);
         }//End of if else statement chain to check menu option that has been selected
-
         Log.d("Ext_onNavigationSel","Exit onNavigationItemSelected method in MainActivity class.");
         return true;
     }//End of onNavigationItemSelected method
@@ -1222,14 +1245,22 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                             //Set isSearchFilter boolean to true
                             isSearchFilter = true;
                             //Declare and instantiate as null a string object to hold the sql query to run. Depending on the current category, different query will be run
-                            String sql="SELECT * FROM GROCERIES WHERE Name LIKE '%";
-                            //Store the search sql for future use
-                            //lastSearchText[1] = sql+input.getText().toString()+"%'";
-                            lastSearchText[1] = input.getText().toString()+"%";
+                            //String sql="SELECT * FROM GROCERIES WHERE Name LIKE '%";
+                            String searchText = input.getText().toString();
+                            //Add % sign for the sql query using LIKE key word
+                            searchText+="%";
+                            //Store the search sql for future use (in it's original state, without including escape character for apostrophe)
+                            lastSearchText[1] = searchText;
+                            //Check the input text has apostrophe
+                            if(searchText.contains("'")){
+                                //If it does, call method to include escape character
+                                searchText = includeApostropheEscapeChar(searchText);
+                            }//End of if statement to check the search text has apostrophe
                             //Update app state in DB
-                            db.updateAppState(currentCategory.getId(),db.toInt(isArchivedSelected),db.toInt(isSearchFilter),db.toInt(cbOnlyChecked.isChecked()),lastSearchText[0]+"'",lastSearchText[1]+"'");
+                            db.updateAppState(currentCategory.getId(),db.toInt(isArchivedSelected),db.toInt(isSearchFilter),db.toInt(cbOnlyChecked.isChecked()),lastSearchText[0],lastSearchText[1]);
                             //Call method to update the adapter and the recyclerView
-                            updateRecyclerViewData(sql+lastSearchText[1]+"'");
+                            updateRecyclerViewData(getSQLForRecyclerView());
+                            //updateRecyclerViewData(sql+lastSearchText[1]+"'");
                         }//End of Onclick method
                     })//End of setPossitiveButton method
                     .setNegativeButton(R.string.cancel,null)
@@ -1245,25 +1276,34 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     .setView(input)
                     .setPositiveButton(R.string.ok,new DialogInterface.OnClickListener(){
                         public void onClick(DialogInterface dialog,int whichButton){
+                            //Set isSearchFilter boolean to true
+                            isSearchFilter = true;
+                            //Declare text to be used for the search (it might be modified if it contains apostrophe)
+                            String searchText = input.getText().toString();
+                            //Add % sign for the sql query using LIKE key word
+                            searchText+="%";
+                            //Store the search sql for future use (in it's original state, without including escape character for apostrophe)
+                            lastSearchText[0] = searchText;
+                            //Check the search text has apostrophe
+                            if(searchText.contains("'")){
+                                //If it does, call method to include escape character
+                                searchText = includeApostropheEscapeChar(searchText);
+                            }//End of if statement to check the search text contains apostrophe
                             //Declare and instantiate as null a string object to hold the sql query to run. Depending on the current category, different query will be run
                             String sql="";
                             //First, Check the current property is All otherwise the query must include the specific category that has been selected
                             if(currentCategory.equals(findCategoryByName(allCategory))){
                                 //Define sql query to retrieve all the task categories
-                                sql = "SELECT * FROM TASK WHERE IsArchived = 0 AND description LIKE '%"+input.getText().toString()+"%'";
+                                sql = "SELECT * FROM TASK WHERE IsArchived = 0 AND description LIKE '%"+searchText+"'";
                             }else{
                                 //Otherwise, define sql query to retrieve tasks with the search text and the current category
-                                sql = "SELECT * FROM TASK WHERE IsArchived = 0 AND Category = " + currentCategory.getId() + " AND description LIKE '%"+input.getText().toString()+"%'";
+                                sql = "SELECT * FROM TASK WHERE IsArchived = 0 AND Category = " + currentCategory.getId() + " AND description LIKE '%"+lastSearchText[0]+"'";
                             }//End of if else statement to  check the current category object
-                            //Set isSearchFilter boolean to true
-                            isSearchFilter = true;
-                            //Store the search sql for future use
-                            //lastSearchText[0] = sql;
-                            lastSearchText[0] = input.getText().toString()+"%";
                             //Update app state in DB
-                            db.updateAppState(currentCategory.getId(),db.toInt(isArchivedSelected),db.toInt(isSearchFilter),db.toInt(cbOnlyChecked.isChecked()),lastSearchText[0]+"'",lastSearchText[1]+"'");
+                            db.updateAppState(currentCategory.getId(),db.toInt(isArchivedSelected),db.toInt(isSearchFilter),db.toInt(cbOnlyChecked.isChecked()),lastSearchText[0],lastSearchText[1]);
                             //Call method to update the adapter and the recyclerView
-                            updateRecyclerViewData(sql);
+                            //updateRecyclerViewData(sql);
+                            updateRecyclerViewData(getSQLForRecyclerView());
                         }//End of Onclick method
                     })//End of setPositiveButton method
                     .setNegativeButton(R.string.cancel,null)
@@ -1286,7 +1326,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         //Clear selection of grocery type filters
         this.clearTypeFilter();
         //Check the current category object... Depending on if it is Groceries or any other the actions will change
-        this.db.updateAppState(currentCategory.getId(),db.toInt(isArchivedSelected),db.toInt(isSearchFilter),db.toInt(cbOnlyChecked.isChecked()),lastSearchText[0]+"'",lastSearchText[1]+"'");
+        this.db.updateAppState(currentCategory.getId(),db.toInt(isArchivedSelected),db.toInt(isSearchFilter),db.toInt(cbOnlyChecked.isChecked()),lastSearchText[0],lastSearchText[1]);
         String sql = this.getSQLForRecyclerView();
         this.updateRecyclerViewData(sql);
         Log.d("Ext_filterCheckedOnly","Exit the filterCheckedOnly method in the MainActivity class");
@@ -1296,7 +1336,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     public void unfilterCheckedOnly(){
         Log.d("Ent_filterCheckedOnly","Enter the unfilterCheckedOnlyt method in the MainActivity class");
         //Call method to get sql based on current filters and method to update the adapter and the recyclerView
-        this.db.updateAppState(currentCategory.getId(),db.toInt(isArchivedSelected),db.toInt(isSearchFilter),db.toInt(cbOnlyChecked.isChecked()),lastSearchText[0]+"'",lastSearchText[1]+"'");
+        this.db.updateAppState(currentCategory.getId(),db.toInt(isArchivedSelected),db.toInt(isSearchFilter),db.toInt(cbOnlyChecked.isChecked()),lastSearchText[0],lastSearchText[1]);
         String sql =this.getSQLForRecyclerView();
         this.updateRecyclerViewData(sql);
         Log.d("Ext_unfilterCheckedOnly","Exit the unfilterCheckedOnly method in the MainActivity class");
@@ -1615,9 +1655,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         Log.d("Ent_throwAbout","Enter throwAboutActivity method in the MainActivity class.");
         //Declare and instantiate a new intent object
         Intent i= new Intent(MainActivity.this,AboutActivity.class);
-        //Add extras to the intent object, specifically the current category where the add button was pressed from
-        //i.putExtra("category",this.currentCategory.toString());
-        //i.putExtra("sql",this.getSQLForRecyclerView());
         //Start the addTaskActivity class
         startActivity(i);
         Log.d("Ext_throwAbout","Exit throwAboutActivity method in the MainActivity class.");
@@ -1648,8 +1685,22 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         //Check current property (is it groceries or any other?)
         if(currentCategory.equals(findCategoryByName(getGroceryCategory())) && !isArchivedSelected){
             //if the current category is the Groceries
+            String sql="";
+            //Check the search filer is applied
+            String lastSearch = lastSearchText[1];
+            if(isSearchFilter) {
+                //If search filter is applied check the lastSearch has apostrophe and define proper sql statement
+                //Check the last search word has apostrophe
+                if (lastSearch.contains("'")) {
+                    lastSearch = includeApostropheEscapeChar(lastSearch);
+                }//End of if statement to check the lastSearch text has an apostrophe
+                sql = "SELECT * FROM GROCERIES WHERE IsSelected = 1 AND Name LIKE '%"+lastSearch+"' ORDER BY TypeOfGrocery ASC" ;
+            }else{
+                //Otherwise, just define proper sql query
+                sql = "SELECT * FROM GROCERIES WHERE IsSelected = 1 ORDER BY TypeOfGrocery ASC";
+            }//End of if else to check the isSearchFilte
             //Run query to filter all the selected items in the Groceries table
-            c= db.runQuery("SELECT * FROM GROCERIES WHERE isSelected = 1 ORDER BY TypeOfGrocery ASC");
+            c= db.runQuery(sql);
             //Initialize the dialogMessage variable.
             dialogMessage = "";
             //Check the cursor is not empty an d has more than one row
@@ -1701,20 +1752,38 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             result = true;
         }else{
             //For any other category
-            //Declare and initialize an empty string object to hold the sql query that will be run to retrive data from database. Depending on current category different sql query will be required
+            //Declare and initialize an empty string object to hold the sql query that will be run to retrieve data from database. Depending on current category different sql query will be required
             String sql ="";
             if(isArchivedSelected){
                 sql = "SELECT * FROM TASK WHERE IsSelected = 1 AND IsArchived = 1 ORDER BY DateClosed "+ tvHighlightFilter.getText().toString();
             }else{
+                //Check the search filer is applied
+                String lastSearch = lastSearchText[0];
+                if(isSearchFilter) {
+                    //Check the last search word has apostrophe
+                    if (lastSearch.contains("'")) {
+                        lastSearch = includeApostropheEscapeChar(lastSearch);
+                    }//End of if statement to check the lastSearch text has an apostrophe
+                }//End of if else to check the isSearchFilte
                 //Check if the current category is All tasks or a specific category has been selected
                 if(currentCategory.equals(findCategoryByName(allCategory))){
-                    //Define sql query that includes all the categories
-                    sql = "SELECT * FROM TASK WHERE IsSelected = 1 AND IsArchived = 0 ORDER BY Category ASC" ;
+                    //Check the search filer is applied
+                    if(isSearchFilter) {
+                        sql = "SELECT * FROM TASK WHERE IsSelected = 1 AND Description LIKE'%"+lastSearch+"' AND IsArchived = 0 ORDER BY Category ASC" ;
+                    }else{
+                        //Define sql query that includes all the categories
+                        sql = "SELECT * FROM TASK WHERE IsSelected = 1 AND IsArchived = 0 ORDER BY Category ASC" ;
+                    }
                 }else{
-                    //Define a sql query for a specific category. Category id comes from the current category object
-                    sql = "SELECT * FROM TASK WHERE IsSelected = 1 AND IsArchived = 0 AND Category = "+ currentCategory.getId();
-                }//End of if else statement
-            }
+                    //Check the search filer is applied
+                    if(isSearchFilter) {
+                        sql = "SELECT * FROM TASK WHERE IsSelected = 1  AND Description LIKE '%"+lastSearch+"' AND IsArchived = 0 AND Category = "+ currentCategory.getId();
+                    }else{
+                        //Define a sql query for a specific category. Category id comes from the current category object
+                        sql = "SELECT * FROM TASK WHERE IsSelected = 1 AND IsArchived = 0 AND Category = "+ currentCategory.getId();
+                    }//End of if else to check the isSearchFilter
+                }//End of if else statement to check current category
+            }//End of if else statement to check if is Archived menu selected
             //Retrieve data from DB by running sql query defined above
             c= db.runQuery(sql);
             //Initialize the dialogMessage string to be empty
@@ -1755,8 +1824,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                                     boolean result = db.deleteItem(task);
                                 }while(c.moveToNext());//End of while loop to delete the selected groceries
                                 //Declare and instantiate as null a string object to hold the sql query to run. Depending on the current category, different query will be run
-                                String sql="";
-                                if(isArchivedSelected){
+                                String sql= getSQLForRecyclerView();
+                                /*if(isArchivedSelected){
                                     sql = "SELECT * FROM TASK WHERE IsArchived = 1 ORDER BY DateClosed "+ tvHighlightFilter.getText().toString();
                                 }else{
                                     //Check if the current category is All tasks or a specific category has been selected
@@ -1767,7 +1836,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                                         //Define a sql query for a specific category. Category id comes from the current category object
                                         sql = "SELECT * FROM TASK WHERE IsArchived = 0 AND Category = "+ currentCategory.getId();
                                     }//End of if else statement
-                                }
+                                }*/
                                 //Call method to update the adapter and the recyclerView
                                 updateRecyclerViewData(sql);
                             }//End of if statement to check cursor is not null or empty
@@ -1777,7 +1846,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     .show();
         }//End if else statement to check is  the grocery category and the isArchviveSelected is false
         Log.d("Ext_delete","Exit delete method in the MainActivity class.");
-        //Return result whihc should be true if the whole method was completed
+        //Return result which should be true if the whole method was completed
         return result;
     }// End of delete method
 
@@ -1847,12 +1916,17 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 .setView(input)
                 .setPositiveButton(R.string.ok,new DialogInterface.OnClickListener(){
                     public void onClick(DialogInterface dialog,int whichButton){
+                        String userName = input.getText().toString();
                         //Check the input field is not empty
-                        if(!input.getText().toString().trim().equals("")){
+                        if(!userName.trim().equals("")){
                             View headerView = navigationView.getHeaderView(0);
                             TextView tvUserName = (TextView) headerView.findViewById(R.id.tvUserName);
+                            //Check the user name has not apostrophe
+                            if(userName.contains("'")){
+                                userName = includeApostropheEscapeChar(userName);
+                            }
                             //Try to update user name on the DB and check result from DB
-                            if(db.updateUser("UserName",input.getText().toString())){
+                            if(db.updateUser("UserName",userName)){
                                 tvUserName.setText(input.getText());
                             }else{
                                 //Display error message if the boolean received from DB is false
@@ -1890,11 +1964,16 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 .setPositiveButton(R.string.ok,new DialogInterface.OnClickListener(){
                     public void onClick(DialogInterface dialog,int whichButton){
                         //Check the input field is not empty
-                        if(!input.getText().toString().trim().equals("")){
+                        String message = input.getText().toString();
+                        if(!message.trim().equals("")){
                             View headerView = navigationView.getHeaderView(0);
                             TextView tvUserMessage = (TextView) headerView.findViewById(R.id.tvUserMessage);
+                            //Check the message has no apostrophe
+                            if(message.contains("'")){
+                                message = includeApostropheEscapeChar(message);
+                            }
                             //Try to update user message on the DB and check result from DB
-                            if(db.updateUser("UserMessage",input.getText().toString())){
+                            if(db.updateUser("UserMessage",message)){
                                 tvUserMessage.setText(input.getText());
                             }else{
                                 //Display error message if the boolean received from DB is false
@@ -2301,6 +2380,27 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         dateFormat = getResources().getStringArray(R.array.dateFormats)[Integer.parseInt(preferredDateFormat)];
         Log.d("Ext_setDateFormat","Exit setDateFormat method in MainActivity class.");
     }//End of setDateFormat method
+
+    //Method used to break a string down into multiple pieces when to allow the apostrophe to be part of the string
+    public static String includeApostropheEscapeChar(String text){
+        Log.d("Ent_apostEscCharString","Enter includeApostropheEscapeChar method in MainActivity class.");
+        String textWithEscChar = "";
+        char apostrophe = '\'';
+        //int lastFoundPosition = 0;
+        //Iterate through the string to find the apostrophe and replace it with double apostrophe
+        for(int i=0;i<text.length();i++){
+            char c  = text.charAt(i);
+            if(c == apostrophe){
+                //If it is an apostrophe, include an extra one
+                textWithEscChar += "''";
+            }else{
+                //Otherwise, copy th e current character to new string
+                textWithEscChar+= text.charAt(i);
+            }
+        }
+        Log.d("Ext_apostEscCharString","Exit includeApostropheEscapeChar method in MainActivity class.");
+        return textWithEscChar;
+    }//End of includeApostropheEscapeChar method
 
     public static String getGroceryCategory(){
         return groceryCategory;
