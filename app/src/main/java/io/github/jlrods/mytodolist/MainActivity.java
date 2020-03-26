@@ -2270,6 +2270,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                                 do {
                                     //Declare and instantiate a task object from data in the current row of cursor
                                     Task task= db.extractTask(c);
+                                    if(task.getDescription().contains("'")){
+                                        task.setDescription(MainActivity.includeApostropheEscapeChar(task.getDescription()));
+                                    }
+                                    if(task.getNotes().contains("'")){
+                                        task.setNotes(MainActivity.includeApostropheEscapeChar(task.getNotes()));
+                                    }
                                     task.setSelected(false);
                                     task.setArchived(true);
                                     task.setDateClosed(Calendar.getInstance().getTimeInMillis());
